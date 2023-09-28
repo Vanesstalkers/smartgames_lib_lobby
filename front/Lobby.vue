@@ -77,7 +77,7 @@ export default {
             if (availableLobbies.length) await this.callLobbyEnter({ lobbyId: availableLobbies[0] });
           }
         },
-        error: (err) => {
+        error: async (err) => {
           if (err.message) this.auth.err = err.message;
           // чтобы пользователь увидел форму авторизации
           this.lobbyDataLoaded = true;
