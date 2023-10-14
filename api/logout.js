@@ -3,7 +3,7 @@ async (context) => {
   const user = lib.store('user').get(userId);
 
   user.set({ gameId: null, playerId: null });
-  await user.saveChanges('lobby.api.logout');
+  await user.saveChanges();
 
   user.logout();
 
