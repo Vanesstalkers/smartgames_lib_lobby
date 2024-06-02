@@ -87,8 +87,8 @@ export default {
   },
   async created() {
     this.state.emit.joinGame = (data) => {
-      const { deckType, gameId } = data;
-      app.$router.push({ path: `/game/${deckType}/${gameId}` }).catch((err) => {
+      const { deckType, gameType, gameId } = data;
+      app.$router.push({ path: `/game/${deckType}/${gameType}/${gameId}` }).catch((err) => {
         console.log(err);
       });
     };
