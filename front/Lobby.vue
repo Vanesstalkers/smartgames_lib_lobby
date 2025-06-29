@@ -70,7 +70,7 @@ export default {
           }
         },
         error: async (err) => {
-          if (err.message) this.auth.err = err.message;
+          if (err?.message) this.auth.err = err.message;
           // чтобы пользователь увидел форму авторизации
           this.lobbyDataLoaded = true;
         },
