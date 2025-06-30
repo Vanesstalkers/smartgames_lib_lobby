@@ -1,12 +1,9 @@
 <template>
-  <div
-    id="lobby"
-    :class="[
-      state.isMobile ? 'mobile-view' : '',
-      state.isLandscape ? 'landscape-view' : 'portrait-view',
-      !state.currentUser ? 'need-auth' : '',
-    ]"
-  >
+  <div id="lobby" :class="[
+    state.isMobile ? 'mobile-view' : '',
+    state.isLandscape ? 'landscape-view' : 'portrait-view',
+    !state.currentUser ? 'need-auth' : '',
+  ]">
     <div class="main-logo">
       <div class="contact-icons-wrapper">
         <a href="https://t.me/smartgamesstudio" target="_black" class="telegram-link"> </a>
@@ -14,19 +11,14 @@
       </div>
     </div>
 
-    <img
-      id="bg-img"
-      src="./assets/lobby.png"
-      usemap="#image-map"
-      :style="{
-        position: 'absolute',
-        left: `${bg.left || 0}px`,
-        top: `${bg.top || 0}px`,
-        scale: bg.scale || 1,
-        transformOrigin: 'center',
-        filter: 'grayscale(1)',
-      }"
-    />
+    <img id="bg-img" src="./assets/lobby.png" usemap="#image-map" :style="{
+      position: 'absolute',
+      left: `${bg.left || 0}px`,
+      top: `${bg.top || 0}px`,
+      scale: bg.scale || 1,
+      transformOrigin: 'center',
+      filter: 'grayscale(1)',
+    }" />
   </div>
 </template>
 
@@ -78,7 +70,7 @@ export default {
           }
         },
         error: async (err) => {
-          if (err.message) this.auth.err = err.message;
+          if (err?.message) this.auth.err = err.message;
           // чтобы пользователь увидел форму авторизации
           this.lobbyDataLoaded = true;
         },
@@ -87,8 +79,8 @@ export default {
   },
   async created() {
     this.state.emit.joinGame = (data) => {
-      const { deckType, gameId } = data;
-      app.$router.push({ path: `/game/${deckType}/${gameId}` }).catch((err) => {
+      const { deckType, gameType, gameId } = data;
+      app.$router.push({ path: `/game/${deckType}/${gameType}/${gameId}` }).catch((err) => {
         console.log(err);
       });
     };
@@ -107,11 +99,11 @@ export default {
       initSession();
     }
   },
-  async beforeDestroy() {},
+  async beforeDestroy() { },
 };
 </script>
 <style lang="scss">
-#lobby > .main-logo {
+#lobby>.main-logo {
   z-index: 1;
   position: absolute;
   width: 400px;
@@ -122,35 +114,39 @@ export default {
   background-size: cover;
   transform-origin: top;
 
-  .contact-icons-wrapper {
-    position: absolute;
-    top: 115px;
-    right: 30px;
-    display: flex;
-    justify-content: center;
+}
 
-    * {
-      cursor: pointer;
-      width: 30px;
-      height: 30px;
-      margin: 5px;
-      background-size: cover;
-      box-shadow: 1.5px 1px black;
-      border-radius: 50%;
+.contact-icons-wrapper {
+  position: absolute;
+  top: 115px;
+  right: 30px;
+  display: flex;
+  justify-content: center;
 
-      &:hover {
-        opacity: 0.7;
-      }
-    }
-    .telegram-link {
-      background-image: url(./assets/telegram.png);
-    }
-    .vk-link {
-      background-image: url(./assets/vk.png);
+  * {
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    margin: 5px;
+    background-size: cover;
+    box-shadow: 1.5px 1px black;
+    border-radius: 50%;
+
+    &:hover {
+      opacity: 0.7;
     }
   }
+
+  .telegram-link {
+    background-image: url(./assets/telegram.png);
+  }
+
+  .vk-link {
+    background-image: url(./assets/vk.png);
+  }
 }
-#lobby.mobile-view > .main-logo {
+
+#lobby.mobile-view>.main-logo {
   width: 300px;
   height: 150px;
   left: calc(50% - 150px);
@@ -160,7 +156,8 @@ export default {
     right: 15px;
   }
 }
-#lobby.mobile-view.landscape-view > .main-logo {
+
+#lobby.mobile-view.landscape-view>.main-logo {
   left: auto;
   right: 10px;
   top: -25px;

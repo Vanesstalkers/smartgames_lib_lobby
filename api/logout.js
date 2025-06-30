@@ -3,9 +3,9 @@ async (context) => {
   const user = lib.store('user').get(userId);
 
   user.set({ gameId: null, playerId: null });
-  await user.saveChanges();
+  await user.saveChanges({ saveToLobbyUser: true});
 
-  user.logout();
+  await user.logout();
 
   return { status: 'ok' };
 };
