@@ -101,17 +101,19 @@ export default {
             }
           }
         },
-        error: async (err) => {
-          this.showAuthForm = true;
+        error: async (err = {}) => {
+          let { code, message } = err;
 
-          if (err?.message) {
-            this.auth.err = err.message;
+          if (message && code !== 'new_user') {
+            this.auth.err = message;
           }
           if (this.onError) {
             await this.onError(err);
           } else {
             this.$emit("session-error", err);
           }
+
+          this.showAuthForm = true;
         },
       });
     },
