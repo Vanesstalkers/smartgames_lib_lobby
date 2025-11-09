@@ -26,20 +26,7 @@
       </template>
       <div v-if="auth.err" class="err">{{ auth.err }}</div>
       <br />
-      <button
-        class="link"
-        style="color: white"
-        v-on:click="
-          createDemoUser({
-            tutorial: {
-              tutorial: 'lobby-tutorial-sales',
-              step: 'teambuilding',
-            },
-          })
-        "
-      >
-        Меня интересуют корпоративные игры
-      </button>
+      <slot :createDemoUser="createDemoUser"></slot>
     </div>
   </div>
 </template>
