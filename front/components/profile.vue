@@ -70,10 +70,10 @@
           }"
         >
           <div v-if="!userData.avatarCode" class="no-avatar-msg">Аватар не выбран</div>
-          <button class="action-btn generate-btn" @click="generate" :disabled="disableGenerateBtn">
+          <!-- <button class="action-btn generate-btn" @click="generate" :disabled="disableGenerateBtn">
             <div><font-awesome-icon :icon="['far', 'star']" /> Сгенерировать персональные аватарки</div>
             <div class="price">&#8381; 1.000.000</div>
-          </button>
+          </button> -->
           <button class="action-btn gallery-btn" @click="showGallery">Выбрать аватар из списка</button>
         </div>
       </div>
