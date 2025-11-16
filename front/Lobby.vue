@@ -3,7 +3,6 @@
     <auth-form
       v-if="!state.currentUser"
       :on-success="handleAuthSuccess"
-      :on-error="handleAuthError"
       :call-lobby-enter="callLobbyEnter"
       :custom-init-session="customInitSession"
     />
@@ -16,6 +15,22 @@
         !state.currentUser ? 'need-auth' : '',
       ]"
     >
+      <tutorial
+        class="scroll-off"
+        :customMenu="customMenu()"
+        :injectedActions="{
+          showProfile: () => {
+            this.showProfile();
+          },
+        }"
+      />
+
+      <profile
+        v-if="profileActive"
+        :closeProfile="closeProfile"
+        :userData="userData"
+      />
+
       <div class="main-logo">
         <div class="contact-icons-wrapper">
           <a
@@ -51,10 +66,16 @@
 </template>
 
 <script>
+import { addEvents, removeEvents, events } from "./lobbyEvents";
+
+import tutorial from "~/lib/helper/front/helper.vue";
+import profile from "./components/profile.vue";
 import authForm from "./components/AuthForm.vue";
 
 export default {
   components: {
+    tutorial,
+    profile,
     authForm,
   },
   props: {
@@ -62,10 +83,27 @@ export default {
   },
   data() {
     return {
-      auth: { login: "", password: "", err: null },
+      gameRestoreProcess: false,
+      unreadMessages: 0,
+      profileActive: false,
       bg: {
         top: 0,
         left: 0,
+        showMask: "",
+      },
+      pinnedItemsLoaded: false,
+      pinned: {
+        chat: false,
+        list: false,
+        top: false,
+        game: false,
+        info: false,
+      },
+      // Данные для компонента галереи
+      galleryData: {
+        images: [],
+        serverOrigin: "",
+        filterConfig: { filters: [] },
       },
     };
   },
@@ -91,28 +129,72 @@ export default {
     },
   },
   methods: {
-    async handleAuthSuccess({ lobbyId, availableLobbies }) {
-      if (lobbyId) {
-        // ??? как будто lobbyId всегда пустое
-        this.$set(this.$root.state, "currentLobby", lobbyId);
-        // this.lobbyDataLoaded = true;
-      } else {
-        if (availableLobbies.length)
-          await this.callLobbyEnter({ lobbyId: availableLobbies[0] });
-      }
-    },
-    async handleAuthError(err) {
-      // this.lobbyDataLoaded = true;
+    async handleAuthSuccess({ lobbyId } = {}) {
+      await this.callLobbyEnter({ lobbyId });
     },
     async callLobbyEnter({ lobbyId }) {
       await api.action
         .call({ path: "lobby.api.enter", args: [{ lobbyId }] })
         .then((data) => {
+          console.log("callLobbyEnter then data", data);
           this.$set(this.$root.state, "currentLobby", lobbyId);
-          // this.lobbyDataLoaded = true;
           if (data.restoreGame) this.gameRestoreProcess = true;
         })
         .catch(prettyAlert);
+    },
+    preparePinnedItems(userData = {}) {
+      if (this.pinnedItemsLoaded) return;
+      if (!userData?.lobbyPinnedItems) return;
+      this.$set(this, "pinned", userData.lobbyPinnedItems);
+      this.pinnedItemsLoaded = true;
+    },
+    customMenu() {
+      const menuWrapper = tutorial.menuWrapper(this.userData);
+      const menuButtonsMap = tutorial.menuButtonsMap(this.tutorialActions);
+
+      const { cancel, tutorials, helperLinks } = menuButtonsMap;
+      const fillTutorials = tutorials({
+        showList: [
+          {
+            title: "Стартовое приветствие",
+            action: { tutorial: "lobby-tutorial-start" },
+          },
+          {
+            title: "Игровая комната",
+            action: { tutorial: "lobby-tutorial-menuGame" },
+          },
+          {
+            title: "Корпоративные игры в тематике ИТ",
+            action: { tutorial: "lobby-tutorial-menuGameReleaseCorporate" },
+          },
+          {
+            title: "Корпоративные игры для автобизнеса",
+            action: { tutorial: "lobby-tutorial-menuGameAutoPoker" },
+          },
+        ],
+      });
+
+      const self = this;
+      return menuWrapper({
+        buttons: [
+          cancel(),
+          {
+            text: "Открой мой профиль",
+            action: async function () {
+              self.menu = null;
+              self.showProfile();
+            },
+          },
+          fillTutorials,
+          helperLinks(),
+        ],
+      });
+    },
+    showProfile() {
+      this.profileActive = true;
+    },
+    closeProfile() {
+      this.profileActive = false;
     },
   },
   async created() {
@@ -132,14 +214,21 @@ export default {
     };
   },
   async mounted() {
-    if (this.state.currentUser && this.state.currentLobby) {
-      // this.lobbyDataLoaded = true;
-    }
+    console.log("lib.lobby mounted() {");
+    addEvents(this);
+    events.resizeBG();
   },
-  async beforeDestroy() {},
+  async beforeDestroy() {
+    removeEvents();
+  },
 };
 </script>
 <style lang="scss">
+#lobby {
+  height: 100%;
+  width: 100%;
+}
+
 #lobby > .main-logo {
   z-index: 1;
   position: absolute;

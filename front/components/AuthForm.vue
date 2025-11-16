@@ -71,34 +71,17 @@ export default {
     },
     async initSession(config = {}) {
       await this.$root.initSession(config, {
-        success: async ({ lobbyId, availableLobbies }) => {
+        success: async ({ lobbyId }) => {
           this.showAuthForm = false;
 
-          if (this.onSuccess) {
-            await this.onSuccess({ lobbyId, availableLobbies });
-          } else {
-            // Дефолтная обработка успеха
-            if (lobbyId) {
-              this.$set(this.$root.state, "currentLobby", lobbyId);
-              this.$emit("session-success");
-            } else {
-              if (availableLobbies.length && this.callLobbyEnter) {
-                await this.callLobbyEnter({ lobbyId: availableLobbies[0] });
-              }
-            }
-          }
+          if (this.onSuccess) await this.onSuccess({ lobbyId });
+          else await this.callLobbyEnter({ lobbyId });
         },
         error: async (err = {}) => {
           let { code, message } = err;
 
-          if (message && code !== 'new_user') {
-            this.auth.err = message;
-          }
-          if (this.onError) {
-            await this.onError(err);
-          } else {
-            this.$emit("session-error", err);
-          }
+          if (message && code !== "new_user") this.auth.err = message;
+          if (this.onError) await this.onError(err);
 
           this.showAuthForm = true;
         },
@@ -115,6 +98,10 @@ export default {
     },
   },
   async mounted() {
+    console.log(
+      "auth.form mounted() { this.customInitSession=",
+      this.customInitSession,
+    );
     if (this.customInitSession) {
       await this.customInitSession();
     } else {
