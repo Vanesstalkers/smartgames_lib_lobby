@@ -559,6 +559,7 @@ export default {
           path: "game.api.new",
           args: [
             {
+              deckType: this.deckType,
               gameType,
               gameConfig,
               gameTimer,

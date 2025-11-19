@@ -8,13 +8,14 @@
   rankings = {};
   rankingsUsersTop = [];
 
-  constructor({ id } = {}, config = {}) {
+  constructor({ id } = {}, settings = {}) {
     super({ col: 'lobby', id });
     Object.assign(this, {
       ...lib.chat['@class'].decorate(),
     });
-    this.#chatEnabled = config.chatEnabled ?? true;
+    this.#chatEnabled = settings.chatEnabled ?? true;
     if (this.#chatEnabled) this.preventSaveFields(['chat']);
+    if (config.smartgames.defaultGameType) this.defaultGameType = config.smartgames.defaultGameType;
   }
   fillRankings() {
     return {};
