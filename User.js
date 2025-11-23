@@ -46,7 +46,7 @@
         }
         helperLinks = {
           ...lib.lobby.tutorial.getHelperLinks(),
-          ...domain.lobby.tutorial?.getHelperLinks?.() || {},
+          ...(domain.lobby.tutorial?.getHelperLinks?.() || {}),
           ...helperLinks,
         };
       }

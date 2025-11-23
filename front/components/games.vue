@@ -1,10 +1,10 @@
 <template>
   <div :class="['games', bigConfig ? 'big-config' : '']">
     <div class="new-game-controls">
-      <div class="breadcrumbs">
+      <div v-if="gameDeckList.length > 0" class="breadcrumbs">
         <span
-          v-if="!defaultGameType"
-          :class="['select-btn', gameType ? 'active selected' : '']"
+          v-if="!defaultDeckType"
+          :class="['select-btn', deckType ? 'active selected' : '']"
           @click="
             selectGameConfig(null), selectGameType(null), selectDeckType(null)
           "
@@ -15,6 +15,7 @@
           {{ deckMap[deckType]?.title }}
         </span>
         <span
+          v-if="deckType"
           :class="['select-btn', gameType ? 'active selected' : '']"
           @click="selectGameConfig(null), selectGameType(null)"
         >
@@ -35,6 +36,9 @@
               : "Выбор режима:"
           }}
         </span>
+      </div>
+      <div v-else class="breadcrumbs">
+        Ожидание подключения игровых серверов...
       </div>
 
       <slot
@@ -62,6 +66,23 @@
         :difficultyList="difficultyList"
         :difficulty="difficulty"
       >
+        <div v-if="!deckType" class="game-types">
+          <div
+            v-for="[code, game] in gameDeckList"
+            :key="code"
+            :class="[
+              'select-btn',
+              `game-${code}`,
+              'wait-for-select',
+              game.active === false ? 'disabled' : '',
+            ]"
+            @click="selectDeckType(code)"
+          >
+            <div class="title">
+              <font-awesome-icon :icon="game.icon" /> {{ game.title }}
+            </div>
+          </div>
+        </div>
         <div v-if="!gameType" :class="['game-block']">
           <div
             v-for="[code, game] in gameTypeList"
@@ -290,7 +311,7 @@ export default {
       type: Object,
       default: () => ({}),
     },
-    defaultGameType: {
+    defaultDeckType: {
       type: String,
       default: null,
     },
@@ -298,7 +319,7 @@ export default {
   data() {
     return {
       gameConfigsLoaded: false,
-      deckType: this.defaultGameType || null,
+      deckType: this.defaultDeckType || null,
       gameType: null,
       gameConfig: null,
       gameTimer: 60,
@@ -312,8 +333,8 @@ export default {
     };
   },
   watch: {
-    defaultGameType(newVal) {
-      // если defaultGameType обновился после инициализации компонента
+    defaultDeckType(newVal) {
+      // если defaultDeckType обновился после инициализации компонента
       this.deckType = newVal || null;
     },
   },
@@ -445,6 +466,11 @@ export default {
 
       this.gameConfigsLoaded = true;
     },
+    selectDeckType(type) {
+      if (type === null || this.deckMap[type]?.active !== false) {
+        this.deckType = type;
+      }
+    },
     selectGameType(type) {
       if (this.gameTypeMap[type]?.disabled && type !== null) return;
 
@@ -528,25 +554,37 @@ export default {
       if (this.maxPlayersInGame.val < min) this.maxPlayersInGame.val = min;
     },
     async handleAddGame(data) {
-      if (!data) data = this;
-
+      if (!data) {
+        const {
+          deckType,
+          gameType,
+          gameConfig,
+          gameTimer,
+          teamsCount,
+          playerCount,
+          maxPlayersInGame,
+          gameRoundLimit,
+          difficulty,
+        } = this;
+        data = {
+          deckType,
+          gameType,
+          gameConfig,
+          gameTimer,
+          teamsCount,
+          playerCount,
+          maxPlayersInGame,
+          gameRoundLimit,
+          difficulty,
+        };
+      }
       // Если передана кастомная функция, используем её
       if (this.addGameHandler) {
-        return await this.addGameHandler.call(data);
+        return await this.addGameHandler(data);
       }
 
       // Дефолтная реализация
-      const {
-        deckType,
-        gameType,
-        gameConfig,
-        gameTimer,
-        teamsCount,
-        playerCount,
-        maxPlayersInGame,
-        gameRoundLimit,
-        difficulty,
-      } = data;
+
       if (!gameType || !gameConfig)
         prettyAlert({ message: "game config not set" });
 
