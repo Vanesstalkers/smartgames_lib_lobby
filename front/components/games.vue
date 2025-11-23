@@ -316,7 +316,7 @@ export default {
     },
     deckMap() {
       return {
-        [this.deckType]: this.games || {},
+        [this.deckType]: { games: this.games || {} },
       };
     },
     gameDeckList() {
@@ -512,10 +512,12 @@ export default {
       if (this.maxPlayersInGame.val > max) this.maxPlayersInGame.val = max;
       if (this.maxPlayersInGame.val < min) this.maxPlayersInGame.val = min;
     },
-    async handleAddGame() {
+    async handleAddGame(data) {
+      if (!data) data = this;
+
       // Если передана кастомная функция, используем её
       if (this.addGameHandler) {
-        return await this.addGameHandler.call(this);
+        return await this.addGameHandler.call(data);
       }
 
       // Дефолтная реализация
@@ -528,7 +530,7 @@ export default {
         maxPlayersInGame,
         gameRoundLimit,
         difficulty,
-      } = this;
+      } = data;
       if (!gameType || !gameConfig)
         prettyAlert({ message: "game config not set" });
 
@@ -571,36 +573,7 @@ export default {
             },
           ],
         })
-        .then((result) => {
-          if (result.status === "ok") {
-            console.log("result=", result);
-            // this.showGameIframe({ gameType });
-          }
-        });
-
-      let { name: userName, login, gender, tgUsername } = this.userData;
-      if (!userName) userName = login;
-
-      // window.iframeEvents.push({
-      //   data: {
-      //     args: [
-      //       {
-      //         gameType,
-      //         gameConfig,
-      //         gameTimer,
-      //         teamsCount,
-      //         playerCount,
-      //         maxPlayersInGame,
-      //         gameRoundLimit,
-      //         difficulty,
-      //       },
-      //     ],
-      //   },
-      //   event: ({ args }) => {
-      //     const $iframe = document.querySelector('#gameIframe');
-      //     $iframe.contentWindow.postMessage({ path: 'game.api.new', args }, '*');
-      //   },
-      // });
+        .catch(prettyAlert);
     },
     async joinGame({ gameId, viewerMode, teamId }) {
       // игровой сервер мог отключиться
@@ -626,7 +599,19 @@ export default {
       this.difficulty = event.target.value;
     },
   },
-  async created() {},
+  async created() {
+    this.state.emit.addGame = (data) => {
+      this.handleAddGame(data);
+    };
+    this.state.emit.joinGame = (data) => {
+      const { deckType, gameType, gameId } = data;
+      app.$router.push({ path: `/game/${deckType}/${gameType}/${gameId}` });
+    };
+    this.state.emit.leaveGame = () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      app.$router.push({ path: `/` });
+    };
+  },
   async mounted() {
     this.prepareGameConfigs();
   },

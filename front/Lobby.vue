@@ -385,9 +385,16 @@ export default {
     async callLobbyEnter({ lobbyId }) {
       await api.action
         .call({ path: "lobby.api.enter", args: [{ lobbyId }] })
-        .then((data) => {
+        .then(async (data) => {
           this.$set(this.$root.state, "currentLobby", lobbyId);
-          if (data.restoreGame) this.gameRestoreProcess = true;
+          if (data.restoreGame) {
+            this.gameRestoreProcess = true;
+
+            await api.action.call({
+              path: "game.api.restore",
+              args: [data.restoreGame],
+            });
+          }
         })
         .catch(prettyAlert);
     },
@@ -498,22 +505,6 @@ export default {
       updateGallery: (images, serverOrigin, filterConfig) => {
         self.updateGallery(images, serverOrigin, filterConfig);
       },
-    };
-  },
-  async created() {
-    this.state.emit.joinGame = (data) => {
-      const { deckType, gameType, gameId } = data;
-      app.$router
-        .push({ path: `/game/${deckType}/${gameType}/${gameId}` })
-        .catch((err) => {
-          console.log(err);
-        });
-    };
-    this.state.emit.leaveGame = () => {
-      if (document.fullscreenElement) document.exitFullscreen();
-      app.$router.push({ path: `/` }).catch((err) => {
-        console.log(err);
-      });
     };
   },
   async mounted() {
