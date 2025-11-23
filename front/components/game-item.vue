@@ -16,7 +16,7 @@
             :icon="deckIcon"
             :style="{ marginRight: '2px' }"
           />
-          <!-- <font-awesome-icon :icon="deckMap[game.deckType].games[game.gameType].icon" /> -->
+          <font-awesome-icon v-if="gameIcon" :icon="gameIcon" />
           {{
             deckMap[game.deckType].games[game.gameType].items[game.gameConfig]
               .title
@@ -134,7 +134,10 @@ export default {
   },
   computed: {
     deckIcon() {
-      return this.deckMap[this.game.deckType].icon;
+      return ['fa', 'rub'] || this.deckMap[this.game.deckType]?.icon;
+    },
+    gameIcon() {
+      return this.deckMap[this.game.deckType]?.games[this.game.gameType]?.icon;
     },
   },
   async mounted() {},

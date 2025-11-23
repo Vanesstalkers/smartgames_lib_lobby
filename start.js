@@ -17,6 +17,7 @@ async () => {
 
   if (lib.game) {
     db.redis.handlers.afterStart({ fillingLobbyGamesList: async () => {
+      console.debug('db.redis.handlers.afterStart({ fillingLobbyGamesList: async () => {');
       const gameTypes = lib.game.actions.getFilledGamesConfigs();
       const games = {};
 
@@ -35,7 +36,7 @@ async () => {
         }
       }
 
-      lib.lobby.__games = games;
+      lib.lobby.__gameServerConfig.games = games;
     } });
 
     // TO_CHANGE - uncomment if needed

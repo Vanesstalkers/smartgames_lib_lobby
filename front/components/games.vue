@@ -3,14 +3,26 @@
     <div class="new-game-controls">
       <div class="breadcrumbs">
         <span
-          v-if="!games[gameType]?.selected"
+          v-if="!defaultGameType"
+          :class="['select-btn', gameType ? 'active selected' : '']"
+          @click="
+            selectGameConfig(null), selectGameType(null), selectDeckType(null)
+          "
+        >
+          {{ deckMap[deckType]?.title || "Выбор колоды:" }}
+        </span>
+        <span v-else class="select-btn active selected preselected">
+          {{ deckMap[deckType]?.title }}
+        </span>
+        <span
           :class="['select-btn', gameType ? 'active selected' : '']"
           @click="selectGameConfig(null), selectGameType(null)"
         >
-          {{ games[gameType]?.title || "Выбор типа игры:" }}
-        </span>
-        <span v-else class="select-btn active selected preselected">
-          {{ games[gameType]?.title }}
+          {{
+            gameTypeMap[gameType]
+              ? gameTypeMap[gameType].title
+              : "Выбор типа игры:"
+          }}
         </span>
         <span
           v-if="gameType"
@@ -63,7 +75,8 @@
             :style="game.style || {}"
             @click="selectGameType(code)"
           >
-            <font-awesome-icon :icon="game.icon" /> {{ game.title }}
+            <font-awesome-icon v-if="game.icon" :icon="game.icon" />
+            {{ game.title }}
           </div>
         </div>
 
@@ -273,11 +286,11 @@ export default {
       type: Function,
       default: null,
     },
-    games: {
+    deckMap: {
       type: Object,
       default: () => ({}),
     },
-    deckType: {
+    defaultGameType: {
       type: String,
       default: null,
     },
@@ -285,9 +298,8 @@ export default {
   data() {
     return {
       gameConfigsLoaded: false,
-      gameType:
-        Object.entries(this.games).find(([code, game]) => game.selected)?.[0] ||
-        null,
+      deckType: this.defaultGameType || null,
+      gameType: null,
       gameConfig: null,
       gameTimer: 60,
       gameRoundLimit: 40,
@@ -299,7 +311,12 @@ export default {
       difficulty: null,
     };
   },
-  watch: {},
+  watch: {
+    defaultGameType(newVal) {
+      // если defaultGameType обновился после инициализации компонента
+      this.deckType = newVal || null;
+    },
+  },
   computed: {
     state() {
       return this.$root.state || {};
@@ -314,20 +331,18 @@ export default {
     lobby() {
       return this.store.lobby?.[this.state.currentLobby] || {};
     },
-    deckMap() {
-      return {
-        [this.deckType]: { games: this.games || {} },
-      };
-    },
     gameDeckList() {
       const list = Object.entries(this.deckMap);
       return list.sort((a, b) => (a.disabled && !b.disabled ? 1 : -1));
     },
+    gameTypeMap() {
+      return this.deckMap[this.deckType]?.games || {};
+    },
     gameTypeList() {
-      return Object.entries(this.games);
+      return Object.entries(this.gameTypeMap);
     },
     gameConfigMap() {
-      return this.games[this.gameType]?.items || {};
+      return this.gameTypeMap[this.gameType]?.items || {};
     },
     gameConfigList() {
       return Object.entries(this.gameConfigMap);
@@ -399,7 +414,7 @@ export default {
         difficulty,
       } = configs.active;
       const { difficulty: difficultyList = [] } =
-        this.games[gameType]?.items[gameConfig] || {};
+        this.gameTypeMap[gameType]?.items[gameConfig] || {};
 
       this.$set(this, "gameType", gameType);
       this.$set(this, "gameConfig", gameConfig);
@@ -431,7 +446,7 @@ export default {
       this.gameConfigsLoaded = true;
     },
     selectGameType(type) {
-      if (this.games[type]?.disabled && type !== null) return;
+      if (this.gameTypeMap[type]?.disabled && type !== null) return;
 
       this.gameType = type;
 
@@ -522,6 +537,7 @@ export default {
 
       // Дефолтная реализация
       const {
+        deckType,
         gameType,
         gameConfig,
         gameTimer,
@@ -541,6 +557,7 @@ export default {
             {
               lobbyGameConfigs: {
                 active: {
+                  deckType,
                   gameType,
                   gameConfig,
                   gameTimer,
@@ -561,7 +578,7 @@ export default {
           path: "game.api.new",
           args: [
             {
-              deckType: this.deckType,
+              deckType,
               gameType,
               gameConfig,
               gameTimer,

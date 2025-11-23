@@ -15,7 +15,8 @@
     });
     this.#chatEnabled = settings.chatEnabled ?? true;
     if (this.#chatEnabled) this.preventSaveFields(['chat']);
-    if (config.smartgames.defaultGameType) this.defaultGameType = config.smartgames.defaultGameType;
+
+    this.__gameServerConfig = lib.lobby.__gameServerConfig;
   }
   fillRankings() {
     return {};
