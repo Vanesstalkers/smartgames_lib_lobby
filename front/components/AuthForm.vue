@@ -70,6 +70,7 @@ export default {
         success: async ({ lobbyId }) => {
           if (this.onSuccess) await this.onSuccess({ lobbyId });
 
+          this.callLobbyEnter({ lobbyId });
           this.showAuthForm = false;
         },
         error: async (err = {}) => {
@@ -102,22 +103,18 @@ export default {
       await this.initSession({ demo: true, tutorial });
     },
     async login() {
-      await this.initSession({
-        login: this.auth.login,
-        password: this.auth.password,
-      });
+      const { login, password } = this.auth;
+      await this.initSession({ login, password });
     },
   },
   async mounted() {
-    let session;
     if (this.customInitSession) {
-      session = await this.customInitSession();
+      await this.customInitSession({
+        callLobbyEnter: this.callLobbyEnter,
+      });
     } else {
-      session = await this.initSession();
+      await this.initSession();
     }
-
-    if (!this.showAuthForm)
-      await this.callLobbyEnter({ lobbyId: session.lobbyId });
   },
 };
 </script>

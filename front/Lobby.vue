@@ -1,8 +1,6 @@
 <template>
   <div style="height: 100%; width: 100%; position: absolute; top: 0; left: 0">
-    <slot
-      name="auth-form"
-    >
+    <slot name="auth-form">
       <auth-form
         v-if="!state.currentUser"
         :custom-init-session="iframeMode ? initSessionIframe : null"
@@ -383,7 +381,7 @@ export default {
     },
   },
   methods: {
-    async initSessionIframe() {
+    async initSessionIframe({ callLobbyEnter }) {
       const searchParams = new URLSearchParams(document.location.search);
       const portalUserId = searchParams.get("userId");
       const portalToken = searchParams.get("token");
@@ -407,7 +405,7 @@ export default {
         "*",
       );
 
-      return session;
+      callLobbyEnter({ lobbyId: session.lobbyId });
     },
     preparePinnedItems(userData = {}) {
       if (this.pinnedItemsLoaded) return;
