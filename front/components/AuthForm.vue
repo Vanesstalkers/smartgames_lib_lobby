@@ -43,10 +43,6 @@ export default {
       type: Function,
       default: null,
     },
-    callLobbyEnter: {
-      type: Function,
-      default: null,
-    },
     customInitSession: {
       type: Function,
       default: null,
@@ -69,13 +65,12 @@ export default {
     toggleLoginForm() {
       this.showLoginForm = true;
     },
-    async initSession(config = {}) {
-      await this.$root.initSession(config, {
+    async initSession(data = {}) {
+      return await this.$root.initSession(data, {
         success: async ({ lobbyId }) => {
-          this.showAuthForm = false;
-
           if (this.onSuccess) await this.onSuccess({ lobbyId });
-          else await this.callLobbyEnter({ lobbyId });
+
+          this.showAuthForm = false;
         },
         error: async (err = {}) => {
           let { code, message } = err;
@@ -86,6 +81,22 @@ export default {
           this.showAuthForm = true;
         },
       });
+    },
+    async callLobbyEnter({ lobbyId }) {
+      await api.action
+        .call({ path: "lobby.api.enter", args: [{ lobbyId }] })
+        .then(async (data) => {
+          this.$set(this.$root.state, "currentLobby", lobbyId);
+          if (data.restoreGame) {
+            this.gameRestoreProcess = true;
+
+            await api.action.call({
+              path: "game.api.restore",
+              args: [data.restoreGame],
+            });
+          }
+        })
+        .catch(prettyAlert);
     },
     async createDemoUser({ tutorial } = {}) {
       await this.initSession({ demo: true, tutorial });
@@ -98,15 +109,15 @@ export default {
     },
   },
   async mounted() {
-    console.log(
-      "auth.form mounted() { this.customInitSession=",
-      this.customInitSession,
-    );
+    let session;
     if (this.customInitSession) {
-      await this.customInitSession();
+      session = await this.customInitSession();
     } else {
-      await this.initSession();
+      session = await this.initSession();
     }
+
+    if (!this.showAuthForm)
+      await this.callLobbyEnter({ lobbyId: session.lobbyId });
   },
 };
 </script>

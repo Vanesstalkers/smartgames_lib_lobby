@@ -302,7 +302,6 @@ export default {
     TutorialGames,
   },
   props: {
-    showGameIframe: Function,
     addGameHandler: {
       type: Function,
       default: null,
@@ -578,55 +577,23 @@ export default {
           difficulty,
         };
       }
+
       // Если передана кастомная функция, используем её
       if (this.addGameHandler) {
         return await this.addGameHandler(data);
       }
 
-      // Дефолтная реализация
-
-      if (!gameType || !gameConfig)
-        prettyAlert({ message: "game config not set" });
-
       await api.action
         .call({
           path: "user.api.update",
-          args: [
-            {
-              lobbyGameConfigs: {
-                active: {
-                  deckType,
-                  gameType,
-                  gameConfig,
-                  gameTimer,
-                  teamsCount,
-                  playerCount,
-                  maxPlayersInGame,
-                  gameRoundLimit,
-                  difficulty,
-                },
-              },
-            },
-          ],
+          args: [{ lobbyGameConfigs: { active: data } }],
         })
         .catch(prettyAlert);
 
       await api.action
         .call({
           path: "game.api.new",
-          args: [
-            {
-              deckType,
-              gameType,
-              gameConfig,
-              gameTimer,
-              teamsCount,
-              playerCount,
-              maxPlayersInGame,
-              gameRoundLimit,
-              difficulty,
-            },
-          ],
+          args: [data],
         })
         .catch(prettyAlert);
     },

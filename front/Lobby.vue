@@ -2,14 +2,10 @@
   <div style="height: 100%; width: 100%; position: absolute; top: 0; left: 0">
     <slot
       name="auth-form"
-      :handleAuthSuccess="handleAuthSuccess"
-      :callLobbyEnter="callLobbyEnter"
     >
       <auth-form
         v-if="!state.currentUser"
-        :on-success="handleAuthSuccess"
-        :call-lobby-enter="callLobbyEnter"
-        :custom-init-session="customInitSession"
+        :custom-init-session="iframeMode ? initSessionIframe : null"
       />
     </slot>
 
@@ -121,6 +117,7 @@
             :showInfo="showInfo"
           >
             <div
+              v-if="!iframeMode"
               :class="[
                 'menu-item',
                 pinned.info ? 'pinned' : '',
@@ -172,6 +169,9 @@
                 </perfect-scrollbar>
               </slot>
             </div>
+            <div v-else :class="['menu-item', 'info']">
+              {{ gameServerTitle }}
+            </div>
           </slot>
         </div>
       </slot>
@@ -201,6 +201,7 @@
       </div>
 
       <img
+        v-if="!iframeMode"
         id="bg-img"
         src="./assets/lobby.png"
         usemap="#image-map"
@@ -243,7 +244,7 @@ export default {
     chat,
   },
   props: {
-    customInitSession: Function,
+    gameServerTitle: null,
   },
   data() {
     return {
@@ -296,6 +297,9 @@ export default {
     },
     lobby() {
       return this.store.lobby?.[this.state.currentLobby] || {};
+    },
+    iframeMode() {
+      return window !== window.parent;
     },
     chatChannels() {
       return {
@@ -379,24 +383,31 @@ export default {
     },
   },
   methods: {
-    async handleAuthSuccess({ lobbyId }) {
-      await this.callLobbyEnter({ lobbyId });
-    },
-    async callLobbyEnter({ lobbyId }) {
-      await api.action
-        .call({ path: "lobby.api.enter", args: [{ lobbyId }] })
-        .then(async (data) => {
-          this.$set(this.$root.state, "currentLobby", lobbyId);
-          if (data.restoreGame) {
-            this.gameRestoreProcess = true;
+    async initSessionIframe() {
+      const searchParams = new URLSearchParams(document.location.search);
+      const portalUserId = searchParams.get("userId");
+      const portalToken = searchParams.get("token");
 
-            await api.action.call({
-              path: "game.api.restore",
-              args: [data.restoreGame],
-            });
-          }
-        })
-        .catch(prettyAlert);
+      const session = await api.action.public({
+        path: "user.api.initSession",
+        args: [
+          {
+            ...{ token: portalToken, portalUserId: portalUserId },
+            windowTabId: window.name,
+          },
+        ],
+      });
+
+      localStorage.setItem(window.tokenName, portalToken);
+      this.$set(this.$root.state, "currentToken", portalToken);
+      this.$set(this.$root.state, "currentUser", portalUserId);
+
+      window.parent.postMessage(
+        { emit: { name: "iframeAlive", data: {} } },
+        "*",
+      );
+
+      return session;
     },
     preparePinnedItems(userData = {}) {
       if (this.pinnedItemsLoaded) return;
