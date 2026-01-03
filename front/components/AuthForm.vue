@@ -34,6 +34,7 @@
 <script>
 export default {
   name: "AuthForm",
+  inject: ["setLobbyState"],
   props: {
     onSuccess: {
       type: Function,
@@ -89,12 +90,10 @@ export default {
         .then(async (data) => {
           this.$set(this.$root.state, "currentLobby", lobbyId);
           if (data.restoreGame) {
-            this.gameRestoreProcess = true;
+            if (this.setLobbyState) this.setLobbyState("restoring-game");
 
-            await api.action.call({
-              path: "game.api.restore",
-              args: [data.restoreGame],
-            });
+            const args = [data.restoreGame];
+            await api.action.call({ path: "game.api.restore", args });
           }
         })
         .catch(prettyAlert);

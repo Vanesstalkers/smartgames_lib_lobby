@@ -10,7 +10,7 @@
     <div
       id="lobby"
       :class="[
-        gameRestoreProcess ? 'game-restore-process-active' : '',
+        'state-' + lobbyState,
         state.isMobile ? 'mobile-view' : '',
         state.isLandscape ? 'landscape-view' : 'portrait-view',
         !state.currentUser ? 'need-auth' : '',
@@ -246,7 +246,7 @@ export default {
   },
   data() {
     return {
-      gameRestoreProcess: false,
+      lobbyState: "deactivated",
       auth: { login: "", password: "", err: null },
       bg: {
         top: 0,
@@ -272,9 +272,7 @@ export default {
   },
   watch: {
     "userData.gameId": function (val) {
-      if (!val) {
-        this.gameRestoreProcess = false;
-      }
+      if (!val) this.lobbyState = "";
     },
   },
   computed: {
@@ -514,6 +512,7 @@ export default {
       updateGallery: (images, serverOrigin, filterConfig) => {
         self.updateGallery(images, serverOrigin, filterConfig);
       },
+      setLobbyState: (state) => (self.lobbyState = state),
     };
   },
   async mounted() {
@@ -541,55 +540,95 @@ export default {
 <style lang="scss">
 @import "@/mixins.scss";
 
+$textshadow: rgb(42, 22, 23);
+
 #lobby {
   height: 100%;
   width: 100%;
 
-  &.game-restore-process-active:after {
-    content: "Загружается последняя игра...";
-    color: #f4e205;
-    line-height: 36px;
-  }
-}
-
-#lobby iframe {
-  z-index: 99999;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  right: 0px;
-  bottom: 0px;
-}
-
-.menu-item {
-  z-index: 1;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  transition: top 0.7s;
-
-  &.pinned,
-  &.preview {
-    z-index: 2;
+  &.state-deactivated,
+  &.state-restoring-game {
+    > * {
+      display: none;
+    }
   }
 
-  .menu-item-content {
-    visibility: hidden;
-    opacity: 0;
-    border: 4px solid #f4e205;
+  &.state-restoring-game {
+    &:after {
+      content: "Загружается последняя игра...";
+      color: #f4e205;
+      line-height: 36px;
+    }
+  }
+
+  .menu-item {
+    z-index: 1;
     position: absolute;
-    left: 0px;
-    top: 100%;
-    background-image: url(@/assets/clear-black-back.png);
-    color: white;
-    transition:
-      visibility 0s,
-      opacity 0.5s linear;
-    overflow: auto;
-  }
-}
+    transform: translate(-50%, -50%);
+    transition: top 0.7s;
 
-.menu-item.pinned > div {
-  max-height: none !important;
+    &.pinned,
+    &.preview {
+      z-index: 2;
+    }
+
+    &.pinned > div {
+      max-height: none !important;
+    }
+
+    .menu-item-content {
+      visibility: hidden;
+      opacity: 0;
+      border: 4px solid #f4e205;
+      position: absolute;
+      left: 0px;
+      top: 100%;
+      background-image: url(@/assets/clear-black-back.png);
+      color: white;
+      transition:
+        visibility 0s,
+        opacity 0.5s linear;
+      overflow: auto;
+    }
+
+    > label {
+      cursor: pointer;
+      position: relative;
+      color: crimson;
+      text-shadow:
+        $textshadow 0px 0px 0px,
+        $textshadow 0.669131px 0.743145px 0px,
+        $textshadow 1.33826px 1.48629px 0px,
+        $textshadow 2.00739px 2.22943px 0px,
+        $textshadow 2.67652px 2.97258px 0px,
+        $textshadow 3.34565px 3.71572px 0px,
+        $textshadow 4.01478px 4.45887px 0px,
+        $textshadow 4.68391px 5.20201px 0px;
+      font-family: fantasy;
+      font-weight: bold;
+      letter-spacing: 10px;
+      white-space: nowrap;
+      padding-left: 6px;
+
+      font-size: 3em;
+      background-image: linear-gradient(#f4e205, #f4e205);
+      background-size: 100% 10px;
+      background-repeat: no-repeat;
+      background-position: 100% 0%;
+      transition:
+        background-size 0.7s,
+        background-position 0.5s ease-in-out;
+    }
+  }
+
+  iframe {
+    z-index: 99999;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    right: 0px;
+    bottom: 0px;
+  }
 }
 
 #lobby.mobile-view .menu-item-list {
@@ -671,37 +710,6 @@ export default {
       height: calc(100% - 30px);
     }
   }
-}
-
-$textshadow: rgb(42, 22, 23);
-
-.menu-item > label {
-  cursor: pointer;
-  position: relative;
-  color: crimson;
-  text-shadow:
-    $textshadow 0px 0px 0px,
-    $textshadow 0.669131px 0.743145px 0px,
-    $textshadow 1.33826px 1.48629px 0px,
-    $textshadow 2.00739px 2.22943px 0px,
-    $textshadow 2.67652px 2.97258px 0px,
-    $textshadow 3.34565px 3.71572px 0px,
-    $textshadow 4.01478px 4.45887px 0px,
-    $textshadow 4.68391px 5.20201px 0px;
-  font-family: fantasy;
-  font-weight: bold;
-  letter-spacing: 10px;
-  white-space: nowrap;
-  padding-left: 6px;
-
-  font-size: 3em;
-  background-image: linear-gradient(#f4e205, #f4e205);
-  background-size: 100% 10px;
-  background-repeat: no-repeat;
-  background-position: 100% 0%;
-  transition:
-    background-size 0.7s,
-    background-position 0.5s ease-in-out;
 }
 
 .menu-item:hover > label,
