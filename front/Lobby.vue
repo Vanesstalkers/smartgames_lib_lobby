@@ -1,10 +1,7 @@
 <template>
   <div style="height: 100%; width: 100%; position: absolute; top: 0; left: 0">
     <slot name="auth-form">
-      <auth-form
-        v-if="!state.currentUser"
-        :custom-init-session="iframeMode ? initSessionIframe : null"
-      />
+      <auth-form v-if="!state.currentUser" :custom-init-session="iframeMode ? initSessionIframe : null" />
     </slot>
 
     <div
@@ -21,19 +18,11 @@
 
       <tutorial
         class="scroll-off"
-        :customMenu="customMenu()"
-        :injectedActions="{
-          showProfile: () => {
-            this.showProfile();
-          },
-        }"
+        :customMenu="customMenu?.() ?? defaultTutorialMenu()"
+        :injectedActions="injectedActions()"
       />
 
-      <profile
-        v-if="profileActive"
-        :closeProfile="closeProfile"
-        :userData="userData"
-      />
+      <profile v-if="profileActive" :closeProfile="closeProfile" :userData="userData" />
 
       <slot name="menu-item-list">
         <div class="menu-item-list">
@@ -48,11 +37,7 @@
               </slot>
             </div>
           </slot>
-          <slot
-            name="menu-item-rules-full"
-            :pinned="pinned.list"
-            :pinMenuItem="pinMenuItem"
-          >
+          <slot name="menu-item-rules-full" :pinned="pinned.list" :pinMenuItem="pinMenuItem">
             <div :class="['menu-item', pinned.list ? 'pinned' : '', 'list']">
               <label v-on:click="pinMenuItem('list')">
                 ПРАВИЛА ИГР
@@ -91,12 +76,7 @@
               </slot>
             </div>
           </slot>
-          <slot
-            name="menu-item-top-full"
-            :pinned="pinned.top"
-            :pinMenuItem="pinMenuItem"
-            :lobby="lobby"
-          >
+          <slot name="menu-item-top-full" :pinned="pinned.top" :pinMenuItem="pinMenuItem" :lobby="lobby">
             <div :class="['menu-item', pinned.top ? 'pinned' : '', 'top']">
               <label v-on:click="pinMenuItem('top')">
                 ЗАЛ СЛАВЫ
@@ -107,67 +87,9 @@
               </slot>
             </div>
           </slot>
-          <slot
-            name="menu-item-info-full"
-            :pinned="pinned.info"
-            :pinMenuItem="pinMenuItem"
-            :state="state"
-            :showInfo="showInfo"
-          >
-            <div
-              v-if="!iframeMode"
-              :class="[
-                'menu-item',
-                pinned.info ? 'pinned' : '',
-                'info',
-                !state.isMobile && pinned.info === null ? 'preview' : '',
-              ]"
-            >
-              <label v-on:click="pinMenuItem('info')">
-                УСЛУГИ СТУДИИ
-                <font-awesome-icon :icon="['fas', 'circle-xmark']" size="2xs" />
-              </label>
 
-              <slot name="menu-item-info">
-                <perfect-scrollbar class="menu-item-content">
-                  <ul>
-                    <li>
-                      <label v-on:click.stop="showInfo('teambuilding')"
-                        >Корпоративные тимбилдинги</label
-                      >
-                      <div>В том числе в онлайн формате</div>
-                    </li>
-                    <li>
-                      <label v-on:click.stop="showInfo('delivery')"
-                        >Продажа настольных игр</label
-                      >
-                      <div>В любом количестве с доставкой до офиса</div>
-                    </li>
-                    <li>
-                      <label v-on:click.stop="showInfo('games')"
-                        >Разработка игр на заказ</label
-                      >
-                      <div>
-                        Настольные обучающие игры для любой сферы бизнеса
-                      </div>
-                    </li>
-                    <li>
-                      <label v-on:click.stop="showInfo('it')"
-                        >Создание онлайн-версий игр</label
-                      >
-                      <div>Собственная команда программистов</div>
-                    </li>
-                    <li>
-                      <label v-on:click.stop="showInfo('contacts')"
-                        >Связаться с нами</label
-                      >
-                      <div>Контактная информация</div>
-                    </li>
-                  </ul>
-                </perfect-scrollbar>
-              </slot>
-            </div>
-            <div v-else :class="['menu-item', 'info']">
+          <slot name="menu-item-info" :pinned="pinned.info" :pinMenuItem="pinMenuItem">
+            <div :class="['menu-item', 'info']">
               {{ gameServerTitle }}
             </div>
           </slot>
@@ -183,18 +105,8 @@
 
       <div class="main-logo">
         <div class="contact-icons-wrapper">
-          <a
-            href="https://t.me/smartgamesstudio"
-            target="_black"
-            class="telegram-link"
-          >
-          </a>
-          <a
-            href="https://vk.com/smartgames.studio"
-            target="_black"
-            class="vk-link"
-          >
-          </a>
+          <a href="https://t.me/smartgamesstudio" target="_black" class="telegram-link"> </a>
+          <a href="https://vk.com/smartgames.studio" target="_black" class="vk-link"> </a>
         </div>
       </div>
 
@@ -217,17 +129,17 @@
 </template>
 
 <script>
-import { PerfectScrollbar } from "vue2-perfect-scrollbar";
-import { addEvents, removeEvents, events } from "./lobbyEvents";
+import { PerfectScrollbar } from 'vue2-perfect-scrollbar';
+import { addEvents, removeEvents, events } from './lobbyEvents';
 
-import authForm from "./components/AuthForm.vue";
-import profile from "./components/profile.vue";
-import gallery from "./components/gallery.vue";
-import games from "./components/games.vue";
-import rankings from "./components/rankings.vue";
-import rules from "./components/rules.vue";
-import chat from "~/lib/chat/front/chat.vue";
-import tutorial from "~/lib/helper/front/helper.vue";
+import authForm from './components/AuthForm.vue';
+import profile from './components/profile.vue';
+import gallery from './components/gallery.vue';
+import games from './components/games.vue';
+import rankings from './components/rankings.vue';
+import rules from './components/rules.vue';
+import chat from '~/lib/chat/front/chat.vue';
+import tutorial from '~/lib/helper/front/helper.vue';
 
 export default {
   components: {
@@ -243,11 +155,12 @@ export default {
   },
   props: {
     gameServerTitle: null,
+    customMenu: Function,
   },
   data() {
     return {
-      lobbyState: "deactivated",
-      auth: { login: "", password: "", err: null },
+      lobbyState: 'deactivated',
+      auth: { login: '', password: '', err: null },
       bg: {
         top: 0,
         left: 0,
@@ -265,14 +178,14 @@ export default {
       // Данные для компонента галереи
       galleryData: {
         images: [],
-        serverOrigin: "",
+        serverOrigin: '',
         filterConfig: { filters: [] },
       },
     };
   },
   watch: {
-    "userData.gameId": function (val) {
-      if (!val) this.lobbyState = "";
+    'userData.gameId': function (val) {
+      if (!val) this.lobbyState = '';
     },
   },
   computed: {
@@ -300,7 +213,7 @@ export default {
     chatChannels() {
       return {
         [`lobby-${this.state.currentLobby}`]: {
-          name: "Общий чат",
+          name: 'Общий чат',
           users: this.lobby.users || {},
           items: this.lobby.chat || {},
         },
@@ -309,83 +222,15 @@ export default {
     isMobilePinned() {
       return Object.values(this.pinned).find((_) => _) && this.state.isMobile;
     },
-    defaultTutorialMenu() {
-      return {
-        text: "Чем могу помочь?",
-        bigControls: true,
-        buttons: [
-          {
-            text: "Открой мой профиль",
-            action: async function () {
-              this.menu = null;
-              this.showProfile();
-            },
-          },
-          {
-            text: "Активировать подсказки",
-            action: async function () {
-              await api.action
-                .call({
-                  path: "helper.api.restoreLinks",
-                  args: [{ inGame: false }],
-                })
-                .then(() => {
-                  this.menu = null;
-                  {
-                    // перерисовываем helper-а, чтобы отобразились подсказки
-                    this.resetFlag = true;
-                    setTimeout(() => {
-                      this.resetFlag = false;
-                    }, 100);
-                  }
-                })
-                .catch(prettyAlert);
-            },
-          },
-          {
-            text: "Покажи доступные обучения",
-            action: {
-              text: `Выбери нужное обучение в списке, чтобы запустить его повторно:
-              `,
-              showList: [
-                {
-                  title: "Стартовое приветствие",
-                  action: { tutorial: "lobby-tutorial-start" },
-                },
-                {
-                  title: "Игровая комната",
-                  action: { tutorial: "lobby-tutorial-menuGame" },
-                },
-                {
-                  title: "Корпоративные игры в тематике ИТ",
-                  action: {
-                    tutorial: "lobby-tutorial-menuGameReleaseCorporate",
-                  },
-                },
-                {
-                  title: "Корпоративные игры для автобизнеса",
-                  action: { tutorial: "lobby-tutorial-menuGameAutoPoker" },
-                },
-              ],
-              buttons: [
-                { text: "Назад в меню", action: "init" },
-                { text: "Спасибо", action: "exit", exit: true },
-              ],
-            },
-          },
-          { text: "Спасибо, ничего не нужно", action: "exit", exit: true },
-        ],
-      };
-    },
   },
   methods: {
     async initSessionIframe({ callLobbyEnter }) {
       const searchParams = new URLSearchParams(document.location.search);
-      const portalUserId = searchParams.get("userId");
-      const portalToken = searchParams.get("token");
+      const portalUserId = searchParams.get('userId');
+      const portalToken = searchParams.get('token');
 
       const session = await api.action.public({
-        path: "user.api.initSession",
+        path: 'user.api.initSession',
         args: [
           {
             ...{ token: portalToken, portalUserId: portalUserId },
@@ -395,38 +240,24 @@ export default {
       });
 
       localStorage.setItem(window.tokenName, portalToken);
-      this.$set(this.$root.state, "currentToken", portalToken);
-      this.$set(this.$root.state, "currentUser", portalUserId);
+      this.$set(this.$root.state, 'currentToken', portalToken);
+      this.$set(this.$root.state, 'currentUser', portalUserId);
 
-      window.parent.postMessage(
-        { emit: { name: "iframeAlive", data: {} } },
-        "*",
-      );
+      window.parent.postMessage({ emit: { name: 'iframeAlive', data: {} } }, '*');
 
       callLobbyEnter({ lobbyId: session.lobbyId });
     },
     preparePinnedItems(userData = {}) {
       if (this.pinnedItemsLoaded) return;
       if (!userData?.lobbyPinnedItems) return;
-      this.$set(this, "pinned", userData.lobbyPinnedItems);
+      this.$set(this, 'pinned', userData.lobbyPinnedItems);
       this.pinnedItemsLoaded = true;
     },
     pinMenuItem(code) {
       this.pinned[code] = !this.pinned[code];
-      api.action
-        .call({
-          path: "user.api.update",
-          args: [{ lobbyPinnedItems: this.pinned }],
-        })
-        .catch(prettyAlert);
-    },
-    showInfo(name) {
-      api.action
-        .call({
-          path: "helper.api.action",
-          args: [{ tutorial: "lobby-tutorial-sales", step: name }],
-        })
-        .catch(prettyAlert);
+
+      const args = [{ lobbyPinnedItems: this.pinned }];
+      api.action.call({ path: 'user.api.update', args }).catch(prettyAlert);
     },
     showProfile() {
       this.profileActive = true;
@@ -434,9 +265,16 @@ export default {
     closeProfile() {
       this.profileActive = false;
     },
+    injectedActions() {
+      return {
+        showProfile: () => {
+          this.showProfile();
+        },
+      };
+    },
     hasUnreadMessages(count = 0) {
       if (this.unreadMessages === 0 && count > 0) {
-        prettyAlert({ message: "Новое сообщение в чате" });
+        prettyAlert({ message: 'Новое сообщение в чате' });
       }
       this.unreadMessages = count;
     },
@@ -457,47 +295,37 @@ export default {
       // Очищаем данные галереи
       this.galleryData = {
         images: [],
-        serverOrigin: "",
+        serverOrigin: '',
         filterConfig: { filters: [] },
       };
     },
-    customMenu() {
+    defaultTutorialMenu() {
       const menuWrapper = tutorial.menuWrapper(this.userData);
-      const menuButtonsMap = tutorial.menuButtonsMap(
-        this.tutorialActions || {},
-      );
+      const menuButtonsMap = tutorial.menuButtonsMap(this.tutorialActions || {});
 
       const { cancel, tutorials, helperLinks } = menuButtonsMap;
       const fillTutorials = tutorials({
         showList: [
           {
-            title: "Стартовое приветствие",
-            action: { tutorial: "lobby-tutorial-start" },
+            title: 'Стартовое приветствие',
+            action: { tutorial: 'lobby-tutorial-start' },
           },
           {
-            title: "Игровая комната",
-            action: { tutorial: "lobby-tutorial-menuGame" },
-          },
-          {
-            title: "Корпоративные игры в тематике ИТ",
-            action: { tutorial: "lobby-tutorial-menuGameReleaseCorporate" },
-          },
-          {
-            title: "Корпоративные игры для автобизнеса",
-            action: { tutorial: "lobby-tutorial-menuGameAutoPoker" },
+            title: 'Игровая комната',
+            action: { tutorial: 'lobby-tutorial-menuGame' },
           },
         ],
       });
 
-      const self = this;
+      const actions = this.injectedActions();
       return menuWrapper({
         buttons: [
           cancel(),
           {
-            text: "Открой мой профиль",
-            action: async function () {
-              self.menu = null;
-              self.showProfile();
+            text: 'Открой мой профиль',
+            action: async function ({ helper }) {
+              helper.menu = null;
+              actions.showProfile();
             },
           },
           fillTutorials,
@@ -521,16 +349,16 @@ export default {
   },
   async beforeDestroy() {
     removeEvents();
-    this.$set(this.$root.state, "viewLoaded", false);
+    this.$set(this.$root.state, 'viewLoaded', false);
 
     return; // при входе в игру не выходим из лобби
 
     await api.action
       .call({
-        path: "lobby.api.exit",
+        path: 'lobby.api.exit',
       })
       .then((data) => {
-        this.$set(this.$root.state, "currentLobby", "");
+        this.$set(this.$root.state, 'currentLobby', '');
       })
       .catch(prettyAlert);
   },
@@ -538,13 +366,34 @@ export default {
 </script>
 <style src="vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css" />
 <style lang="scss">
-@import "@/mixins.scss";
+@import '@/mixins.scss';
 
 $textshadow: rgb(42, 22, 23);
+
+@mixin menu-item-label-active {
+  background-size: 100% 100%;
+  background-position: 0% 100%;
+  transition:
+    background-position 0.7s,
+    background-size 0.5s ease-in-out;
+  box-shadow: 1px 0px 20px 6px rgba(0, 0, 0, 1);
+}
 
 #lobby {
   height: 100%;
   width: 100%;
+
+  > .main-logo {
+    z-index: 1;
+    position: absolute;
+    width: 400px;
+    height: 200px;
+    left: calc(50% - 200px);
+    top: 0px;
+    background-image: url(./assets/logo.png);
+    background-size: cover;
+    transform-origin: top;
+  }
 
   &.state-deactivated,
   &.state-restoring-game {
@@ -555,7 +404,7 @@ $textshadow: rgb(42, 22, 23);
 
   &.state-restoring-game {
     &:after {
-      content: "Загружается последняя игра...";
+      content: 'Загружается последняя игра...';
       color: #f4e205;
       line-height: 36px;
     }
@@ -567,13 +416,22 @@ $textshadow: rgb(42, 22, 23);
     transform: translate(-50%, -50%);
     transition: top 0.7s;
 
+    &.tutorial-active {
+      background: white;
+    }
+
     &.pinned,
     &.preview {
       z-index: 2;
     }
 
-    &.pinned > div {
-      max-height: none !important;
+    &.pinned {
+      > div {
+        max-height: none !important;
+      }
+      > label > svg {
+        display: inline-block;
+      }
     }
 
     .menu-item-content {
@@ -589,6 +447,14 @@ $textshadow: rgb(42, 22, 23);
         visibility 0s,
         opacity 0.5s linear;
       overflow: auto;
+    }
+
+    &:hover > div,
+    &.pinned > div,
+    &.preview > div,
+    &.tutorial-active > div {
+      visibility: visible;
+      opacity: 1;
     }
 
     > label {
@@ -618,6 +484,113 @@ $textshadow: rgb(42, 22, 23);
       transition:
         background-size 0.7s,
         background-position 0.5s ease-in-out;
+
+      > svg {
+        display: none;
+        padding: 10px;
+        position: absolute;
+        top: 0px;
+        right: 100%;
+        color: #f4e205;
+        box-shadow: 0px 0px 10px 2px rgb(0, 0, 0);
+        background-color: black;
+        border-radius: 50%;
+        padding: 0px;
+        margin: 10px;
+
+        :hover {
+          opacity: 0.7;
+        }
+      }
+    }
+
+    &:hover > label,
+    &.pinned > label {
+      @include menu-item-label-active;
+    }
+
+    &.game {
+      top: 70%;
+      left: 45%;
+
+      &.pinned {
+        top: 45%;
+        left: 45%;
+      }
+
+      > label {
+        display: block;
+        white-space: pre-line;
+      }
+
+      > div {
+        height: 300px;
+        width: 500px;
+        max-height: 200px;
+      }
+    }
+
+    &.chat {
+      top: 60%;
+      left: 10%;
+
+      &.pinned {
+        top: 10%;
+        left: 10%;
+
+        .chat-controls {
+          display: flex !important;
+        }
+      }
+
+      > label > small {
+        font-size: 16px;
+        letter-spacing: 0px;
+        text-align: right;
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        left: 0px;
+        top: -16px;
+        color: #0078d7;
+      }
+
+      > div {
+        height: 500px;
+        width: 300px;
+        max-height: 200px;
+      }
+    }
+
+    &.top {
+      top: 35%;
+      left: 40%;
+
+      &.pinned {
+        top: 10%;
+        left: 40%;
+      }
+
+      > div {
+        height: 200px;
+        width: 500px;
+      }
+    }
+
+    &.list {
+      top: 45%;
+      left: 80%;
+
+      &.pinned {
+        top: 20%;
+        left: 80%;
+      }
+
+      > div {
+        height: 500px;
+        width: 400px;
+        max-height: 300px;
+      }
     }
   }
 
@@ -629,6 +602,10 @@ $textshadow: rgb(42, 22, 23);
     right: 0px;
     bottom: 0px;
   }
+}
+
+#lobby:not(.mobile-view) .menu-item.tutorial-active > label {
+  @include menu-item-label-active;
 }
 
 #lobby.mobile-view .menu-item-list {
@@ -712,182 +689,6 @@ $textshadow: rgb(42, 22, 23);
   }
 }
 
-.menu-item:hover > label,
-.menu-item.pinned > label,
-#lobby:not(.mobile-view) .menu-item.tutorial-active > label {
-  background-size: 100% 100%;
-  background-position: 0% 100%;
-  transition:
-    background-position 0.7s,
-    background-size 0.5s ease-in-out;
-  box-shadow: 1px 0px 20px 6px rgba(0, 0, 0, 1);
-}
-
-.menu-item > label > svg {
-  display: none;
-  padding: 10px;
-  position: absolute;
-  top: 0px;
-  right: 100%;
-  color: #f4e205;
-  box-shadow: 0px 0px 10px 2px rgb(0, 0, 0);
-  background-color: black;
-  border-radius: 50%;
-  padding: 0px;
-  margin: 10px;
-
-  :hover {
-    opacity: 0.7;
-  }
-}
-
-.menu-item.pinned > label > svg {
-  display: inline-block;
-}
-
-#lobby:not(.mobile-view) .menu-item:hover > div,
-.menu-item.pinned > div,
-.menu-item.preview > div,
-.menu-item.tutorial-active > div {
-  visibility: visible;
-  opacity: 1;
-}
-
-.menu-item.info {
-  top: 100px;
-  left: calc(50% + 400px);
-
-  $info_textshadow: rgb(42, 22, 23);
-
-  > label {
-    font-size: 2.5em;
-    letter-spacing: 6px;
-    color: white;
-    background-image: linear-gradient(#1976d2, #1976d2);
-    text-shadow:
-      $info_textshadow 0px -2px 0px,
-      $info_textshadow -2px 0px 0px,
-      $info_textshadow 0px 0px 0px,
-      $info_textshadow 0.669131px 0.743145px 0px,
-      $info_textshadow 1.33826px 1.48629px 0px,
-      $info_textshadow 2.00739px 2.22943px 0px,
-      $info_textshadow 2.67652px 2.97258px 0px,
-      $info_textshadow 3.34565px 3.71572px 0px,
-      $info_textshadow 4.01478px 4.45887px 0px,
-      $info_textshadow 4.68391px 5.20201px 0px;
-
-    > svg {
-      color: #1976d2;
-      width: 18px;
-      height: 18px;
-      margin-top: 4px;
-      background-color: white;
-      // box-shadow: inset 0px 0px 0px 4px #1976d2;
-    }
-  }
-
-  &.pinned > label,
-  &:hover > label {
-    background-image: linear-gradient(#1976d2, #1976d2);
-
-    &:before {
-      display: none;
-    }
-  }
-
-  &.preview:not(.pinned) > div {
-    height: 180px;
-    overflow: hidden;
-  }
-
-  > div,
-  &.info.preview:hover > div {
-    height: 460px;
-    width: 400px;
-    border-color: #1976d2;
-  }
-}
-
-.menu-item.game {
-  top: 70%;
-  left: 45%;
-}
-
-.menu-item.game.pinned {
-  top: 45%;
-  left: 45%;
-}
-
-.menu-item.game > label {
-  display: block;
-  white-space: pre-line;
-}
-
-.menu-item.game > div {
-  height: 300px;
-  width: 500px;
-  max-height: 200px;
-}
-
-.menu-item.chat {
-  top: 60%;
-  left: 10%;
-}
-
-.menu-item.chat > label > small {
-  font-size: 16px;
-  letter-spacing: 0px;
-  text-align: right;
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  left: 0px;
-  top: -16px;
-  color: #0078d7;
-}
-
-.menu-item.chat.pinned {
-  top: 10%;
-  left: 10%;
-}
-
-.menu-item.chat > div {
-  height: 500px;
-  width: 300px;
-  max-height: 200px;
-}
-
-.menu-item.top {
-  top: 35%;
-  left: 40%;
-}
-
-.menu-item.top.pinned {
-  top: 10%;
-  left: 40%;
-}
-
-.menu-item.top > div {
-  height: 200px;
-  width: 500px;
-}
-
-.menu-item.list {
-  top: 45%;
-  left: 80%;
-}
-
-.menu-item.list.pinned {
-  top: 20%;
-  left: 80%;
-}
-
-.menu-item.list > div {
-  height: 500px;
-  width: 400px;
-  max-height: 300px;
-}
-
 #lobby.mobile-view .menu-item {
   left: 0px;
   width: 100%;
@@ -914,65 +715,9 @@ $textshadow: rgb(42, 22, 23);
   max-width: 450px;
 }
 
-.menu-item.tutorial-active {
-  background: white;
-}
-
 #lobby.mobile-view .menu-item.tutorial-active {
   background: transparent;
   box-shadow: none;
-}
-
-#lobby > .main-logo {
-  z-index: 1;
-  position: absolute;
-  width: 400px;
-  height: 200px;
-  left: calc(50% - 200px);
-  top: 0px;
-  background-image: url(./assets/logo.png);
-  background-size: cover;
-  transform-origin: top;
-}
-
-.contact-icons-wrapper {
-  position: absolute;
-  top: 115px;
-  right: 30px;
-  display: flex;
-  justify-content: center;
-
-  * {
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
-    margin: 5px;
-    background-size: cover;
-    box-shadow: 1.5px 1px black;
-    border-radius: 50%;
-
-    &:hover {
-      opacity: 0.7;
-    }
-  }
-
-  .telegram-link {
-    background-image: url(./assets/telegram.png);
-  }
-
-  .vk-link {
-    background-image: url(./assets/vk.png);
-  }
-}
-
-.helper-dialog {
-  .contact-icons-wrapper {
-    width: 100%;
-    position: relative;
-    top: auto;
-    left: auto;
-    padding-left: 40px;
-  }
 }
 
 #lobby.mobile-view > .main-logo {
@@ -1050,7 +795,7 @@ $textshadow: rgb(42, 22, 23);
 }
 
 .menu-item.list ul > li.disabled > label:not(.not-disabled):after {
-  content: "(в разработке)";
+  content: '(в разработке)';
   color: grey;
   font-size: 20px;
   padding-left: 10px;
@@ -1059,6 +804,46 @@ $textshadow: rgb(42, 22, 23);
 .menu-item.list ul > li > hr {
   width: 80%;
   margin: 6px 0px;
+}
+
+.contact-icons-wrapper {
+  position: absolute;
+  top: 115px;
+  right: 30px;
+  display: flex;
+  justify-content: center;
+
+  * {
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    margin: 5px;
+    background-size: cover;
+    box-shadow: 1.5px 1px black;
+    border-radius: 50%;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  .telegram-link {
+    background-image: url(./assets/telegram.png);
+  }
+
+  .vk-link {
+    background-image: url(./assets/vk.png);
+  }
+}
+
+.helper-dialog {
+  .contact-icons-wrapper {
+    width: 100%;
+    position: relative;
+    top: auto;
+    left: auto;
+    padding-left: 40px;
+  }
 }
 
 .lobby-btn {
@@ -1071,12 +856,8 @@ $textshadow: rgb(42, 22, 23);
 }
 
 .lobby-btn:hover,
-.lobby-btn[disabled="disabled"] {
+.lobby-btn[disabled='disabled'] {
   background: black !important;
   color: #f4e205;
-}
-
-.menu-item.pinned .chat-controls {
-  display: flex !important;
 }
 </style>

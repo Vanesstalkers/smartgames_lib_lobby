@@ -140,6 +140,11 @@ export default {
     },
   },
   methods: {
+    handleEscKey(event) {
+      if (event.key === 'Escape' || event.keyCode === 27) {
+        this.closeProfile();
+      }
+    },
     toggleChangePassword() {
       this.disablePasswordInput = false;
       prettyAlert({ message: 'Укажи новый пароль и введи его второй раз для подтверждения' });
@@ -248,10 +253,15 @@ export default {
     },
   },
   async created() {},
-  async mounted() {},
-  async beforeDestroy() {},
+  async mounted() {
+    document.addEventListener('keydown', this.handleEscKey);
+  },
+  async beforeDestroy() {
+    document.removeEventListener('keydown', this.handleEscKey);
+  },
 };
 </script>
+
 <style src="vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css" />
 <style lang="scss" scoped>
 .shown-profile {
@@ -620,4 +630,3 @@ export default {
   }
 }
 </style>
-

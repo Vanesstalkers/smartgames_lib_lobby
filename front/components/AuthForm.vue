@@ -3,24 +3,12 @@
     <div class="form">
       <h3>Вход в лобби</h3>
       <button class="new" v-on:click="createDemoUser">Войти как гость</button>
-      <button v-if="!showLoginForm" class="link" v-on:click="toggleLoginForm">
-        Войти с паролем
-      </button>
+      <button v-if="!showLoginForm" class="link" v-on:click="toggleLoginForm">Войти с паролем</button>
       <template v-else>
         <div class="inputs">
-          <input
-            v-model="auth.login"
-            name="login"
-            placeholder="логин"
-            @input="updateAuth"
-          />
+          <input v-model="auth.login" name="login" placeholder="логин" @input="updateAuth" />
           <span :style="{ width: '10px' }"></span>
-          <input
-            v-model="auth.password"
-            name="password"
-            placeholder="пароль"
-            @input="updateAuth"
-          />
+          <input v-model="auth.password" name="password" placeholder="пароль" @input="updateAuth" />
         </div>
         <button v-on:click="login">Авторизоваться</button>
       </template>
@@ -33,8 +21,8 @@
 
 <script>
 export default {
-  name: "AuthForm",
-  inject: ["setLobbyState"],
+  name: 'AuthForm',
+  inject: ['setLobbyState'],
   props: {
     onSuccess: {
       type: Function,
@@ -48,12 +36,16 @@ export default {
       type: Function,
       default: null,
     },
+    customLobbyEnter: {
+      type: Function,
+      default: null,
+    },
   },
   data() {
     return {
       showAuthForm: false,
       showLoginForm: false,
-      auth: { login: "", password: "", err: null },
+      auth: { login: '', password: '', err: null },
     };
   },
   methods: {
@@ -77,23 +69,31 @@ export default {
         error: async (err = {}) => {
           let { code, message } = err;
 
-          if (message && code !== "new_user") this.auth.err = message;
+          if (message && code !== 'new_user') this.auth.err = message;
           if (this.onError) await this.onError(err);
 
           this.showAuthForm = true;
         },
       });
     },
-    async callLobbyEnter({ lobbyId }) {
+    updateLobbyState(state) {
+      if (this.setLobbyState) this.setLobbyState(state);
+    },
+    async callLobbyEnter(data) {
+      if (this.customLobbyEnter) return this.customLobbyEnter(data);
+
+      const { lobbyId } = data;
       await api.action
-        .call({ path: "lobby.api.enter", args: [{ lobbyId }] })
+        .call({ path: 'lobby.api.enter', args: [{ lobbyId }] })
         .then(async (data) => {
-          this.$set(this.$root.state, "currentLobby", lobbyId);
+          this.updateLobbyState('');
+          this.$set(this.$root.state, 'currentLobby', lobbyId);
+
           if (data.restoreGame) {
-            if (this.setLobbyState) this.setLobbyState("restoring-game");
+            this.updateLobbyState('restoring-game');
 
             const args = [data.restoreGame];
-            await api.action.call({ path: "game.api.restore", args });
+            await api.action.call({ path: 'game.api.restore', args });
           }
         })
         .catch(prettyAlert);
