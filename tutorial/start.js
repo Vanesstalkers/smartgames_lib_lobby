@@ -100,7 +100,7 @@
       `,
       buttons: [
         { text: 'Перейти в профиль', icon: ['fas', 'user'], action: 'profile' },
-        { text: 'Понятно', action: 'exit' },
+        { text: 'Понятно', action: 'exit', exit: true },
       ],
     },
   },
