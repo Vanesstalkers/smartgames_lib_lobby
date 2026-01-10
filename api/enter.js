@@ -29,7 +29,7 @@ async (context, { lobbyId }) => {
 
     const { deckType, gameType } = gameInfo;
     let needLoadGame = true;
-    const isAlive = await lib.store.broadcaster.publishAction.call(session, `game-${gameId}`, 'isAlive');
+    const isAlive = await lib.store.broadcaster.publishAction.call(session, `game-${gameId}`, 'fakeAction');
     if (isAlive) {
       needLoadGame = false;
       session.set({ gameId, playerId, viewerId, lobbyId });

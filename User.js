@@ -55,10 +55,6 @@
       await this.saveChanges();
     }
     async leaveLobby({ sessionId, lobbyId }) {
-      if (this.currentTutorial?.active) {
-        this.set({ currentTutorial: null, helper: null });
-      }
-
       const lobbyName = `lobby-${lobbyId}`;
       await lib.store.broadcaster.publishAction.call(this, lobbyName, 'userLeave', {
         sessionId,

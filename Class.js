@@ -62,7 +62,7 @@
    * Сохраняет данные при получении обновлений
    * @param {*} data
    */
-  async processData(data) {
+  async processData(data, broadcaster) {
     for (const [key, map] of Object.entries(data)) {
       switch (key) {
       case 'user':
@@ -326,7 +326,7 @@
       await this.unsubscribe(`game-${gameId}`);
       this.set({ games: { [gameId]: null } });
     } else {
-      const isAlive = await lib.store.broadcaster.publishAction.call(this, `game-${gameId}`, 'isAlive');
+      const isAlive = await lib.store.broadcaster.publishAction.call(this, `game-${gameId}`, 'fakeAction');
       if (!isAlive) {
         await this.unsubscribe(`game-${gameId}`);
         this.set({ games: { [gameId]: null } });

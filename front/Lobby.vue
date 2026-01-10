@@ -1,7 +1,7 @@
 <template>
   <div style="height: 100%; width: 100%; position: absolute; top: 0; left: 0">
     <slot name="auth-form">
-      <auth-form v-if="!state.currentUser" :custom-init-session="iframeMode ? initSessionIframe : null" />
+      <auth-form v-if="!state.currentUser" :custom-init-session="state.iframeMode ? initSessionIframe : null" />
     </slot>
 
     <div
@@ -111,7 +111,7 @@
       </div>
 
       <img
-        v-if="!iframeMode"
+        v-if="!state.iframeMode"
         id="bg-img"
         src="./assets/lobby.png"
         usemap="#image-map"
@@ -183,11 +183,6 @@ export default {
       },
     };
   },
-  watch: {
-    'userData.gameId': function (val) {
-      if (!val) this.lobbyState = '';
-    },
-  },
   computed: {
     state() {
       return this.$root.state || {};
@@ -206,9 +201,6 @@ export default {
     },
     lobby() {
       return this.store.lobby?.[this.state.currentLobby] || {};
-    },
-    iframeMode() {
-      return window !== window.parent;
     },
     chatChannels() {
       return {
@@ -344,12 +336,17 @@ export default {
     };
   },
   async mounted() {
+    // возврат из game
+    if (this.state.currentUser && !this.userData.gameId) this.lobbyState = '';
+
     addEvents(this);
     events.resizeBG();
   },
   async beforeDestroy() {
     removeEvents();
     this.$set(this.$root.state, 'viewLoaded', false);
+
+    // console.log('async beforeDestroy() { this.lobbyState = ', this.lobbyState);
 
     return; // при входе в игру не выходим из лобби
 
