@@ -11,16 +11,9 @@
         }"
       >
         <span>
-          <font-awesome-icon
-            v-if="deckIcon"
-            :icon="deckIcon"
-            :style="{ marginRight: '2px' }"
-          />
-          <font-awesome-icon v-if="gameIcon" :icon="gameIcon" />
-          {{
-            deckMap[game.deckType].games[game.gameType].items[game.gameConfig]
-              .title
-          }}
+          <font-awesome-icon v-if="gameIcon" :icon="gameIcon" :style="{ marginRight: '2px' }" />
+          <font-awesome-icon v-if="gameTypeIcon" :icon="gameTypeIcon" />
+          {{ gamesMap[game.gameCode].games[game.gameType].items[game.gameConfig].title }}
         </span>
         <span>
           <font-awesome-icon :icon="['fas', 'stopwatch']" />
@@ -33,29 +26,18 @@
           :class="['show-teams', showTeams ? 'open' : '']"
           v-on:click="$emit('show-team')"
         />
-        <span
-          v-if="game.waitForPlayer && game.teams"
-          :style="{ marginRight: '8px' }"
-          class="teams-btn"
+        <span v-if="game.waitForPlayer && game.teams" :style="{ marginRight: '8px' }" class="teams-btn"
           >Команд: {{ game.teams.length }}</span
         >
-        <span v-if="game.waitForPlayer && game.joinedPlayers"
-          >Игроков: {{ game.joinedPlayers }}</span
-        >
-        <span v-if="!game.waitForPlayer || game.round">
-          Идет {{ game.round }} раунд
-        </span>
+        <span v-if="game.waitForPlayer && game.joinedPlayers">Игроков: {{ game.joinedPlayers }}</span>
+        <span v-if="!game.waitForPlayer || game.round"> Идет {{ game.round }} раунд </span>
       </div>
     </div>
     <div :style="{ flexShrink: 0, alignSelf: 'flex-start' }">
       <button
-        v-if="
-          game.waitForPlayer ||
-          game.teams?.length > 0 ||
-          game.readyPlayers < game.maxPlayersInGame
-        "
+        v-if="game.waitForPlayer || game.teams?.length > 0 || game.readyPlayers < game.maxPlayersInGame"
         class="lobby-btn join-btn"
-        v-on:click="$emit('join', { gameId: game.id, deckType: game.deckType })"
+        v-on:click="$emit('join', { gameId: game.id, gameCode: game.gameCode })"
       >
         Присоединиться
       </button>
@@ -69,13 +51,7 @@
       >
         <button
           class="lobby-btn join-btn viewer"
-          v-on:click="
-            $emit('join', {
-              gameId: game.id,
-              deckType: game.deckType,
-              viewerMode: true,
-            })
-          "
+          v-on:click="$emit('join', { gameId: game.id, gameCode: game.gameCode, viewerMode: true })"
         >
           <font-awesome-icon :icon="['fas', 'eye']" />
           Посмотреть
@@ -83,11 +59,7 @@
       </span>
     </div>
     <div v-if="showTeams" :style="{ width: '100%', fontSize: '12px' }">
-      <div
-        v-for="team in game.teams"
-        :key="team.id"
-        :style="{ display: 'flex', marginBottom: '6px' }"
-      >
+      <div v-for="team in game.teams" :key="team.id" :style="{ display: 'flex', marginBottom: '6px' }">
         <button
           class="lobby-btn join-btn small-btn"
           :style="{
@@ -99,13 +71,7 @@
             padding: '2px 6px',
             height: '20px',
           }"
-          v-on:click="
-            $emit('join', {
-              gameId: game.id,
-              deckType: game.deckType,
-              teamId: team.id,
-            })
-          "
+          v-on:click="$emit('join', { gameId: game.id, gameCode: game.gameCode, teamId: team.id })"
         >
           Присоединиться
         </button>
@@ -117,13 +83,13 @@
 
 <script>
 export default {
-  name: "game-item",
+  name: 'game-item',
   props: {
     game: {
       type: Object,
       required: true,
     },
-    deckMap: {
+    gamesMap: {
       type: Object,
       required: true,
     },
@@ -133,18 +99,18 @@ export default {
     },
   },
   computed: {
-    deckIcon() {
-      return ['fa', 'rub'] || this.deckMap[this.game.deckType]?.icon;
-    },
     gameIcon() {
-      return this.deckMap[this.game.deckType]?.games[this.game.gameType]?.icon;
+      return ['fa', 'rub'] || this.gamesMap[this.game.gameCode]?.icon;
+    },
+    gameTypeIcon() {
+      return this.gamesMap[this.game.gameCode]?.games[this.game.gameType]?.icon;
     },
   },
   async mounted() {},
 };
 </script>
 <style lang="scss" scoped>
-@import "@/mixins.scss";
+@import '@/mixins.scss';
 
 .game-item {
   @include flex($justify: space-between, $wrap: wrap);

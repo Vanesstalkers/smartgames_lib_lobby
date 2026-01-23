@@ -2,7 +2,7 @@
   <div>
     <game-item :game="{
       id: 'tutorial-game',
-      deckType: 'corporate',
+      gameCode: 'corporate',
       gameType: 'corporate',
       gameConfig: 'default',
       gameTimer: 60000,
@@ -13,7 +13,7 @@
         { id: 'team1', title: 'Команда 1' },
         { id: 'team2', title: 'Команда 2' }
       ]
-    }" :deck-map="{
+    }" :gamesMap="{
       corporate: {
         icon: ['fas', 'building'],
         games: {
@@ -30,14 +30,14 @@
     }" :show-teams="showTeams['tutorial-game']" @show-team="showTeam('tutorial-game')" @join="() => { }" />
     <game-item :game="{
       id: 'tutorial-game-classic',
-      deckType: 'classic',
+      gameCode: 'classic',
       gameType: 'classic',
       gameConfig: 'default',
       gameTimer: 45000,
       joinedPlayers: 3,
       waitForPlayer: true,
       round: null
-    }" :deck-map="{
+    }" :gamesMap="{
       classic: {
         icon: ['fas', 'microchip'],
         games: {

@@ -1,33 +1,35 @@
 <template>
   <div :class="['games', bigConfig ? 'big-config' : '']">
     <div class="new-game-controls">
-      <div v-if="gameDeckList.length > 0" class="breadcrumbs">
-        <span
-          v-if="!defaultDeckType"
-          :class="['select-btn', deckType ? 'active selected' : '']"
-          @click="selectGameConfig(null), selectGameType(null), selectDeckType(null)"
-        >
-          {{ deckMap[deckType]?.title || 'Выбор колоды:' }}
-        </span>
-        <span v-else class="select-btn active selected preselected">
-          {{ deckMap[deckType]?.title }}
-        </span>
-        <span
-          v-if="deckType"
-          :class="['select-btn', gameType ? 'active selected' : '']"
-          @click="selectGameConfig(null), selectGameType(null)"
-        >
-          {{ gameTypeMap[gameType] ? gameTypeMap[gameType].title : 'Выбор типа игры:' }}
-        </span>
-        <span
-          v-if="gameType"
-          :class="['select-btn', gameConfig ? 'active selected' : '']"
-          @click="selectGameConfig(null)"
-        >
-          {{ gameConfigMap[gameConfig] ? gameConfigMap[gameConfig].title : 'Выбор режима:' }}
-        </span>
-      </div>
-      <div v-else class="breadcrumbs">Ожидание подключения игровых серверов...</div>
+      <slot name="breadcrumbs">
+        <div v-if="gamesList.length > 0" class="breadcrumbs">
+          <span
+            v-if="!defaultGameCode"
+            :class="['select-btn', gameCode ? 'active selected' : '']"
+            @click="selectGameConfig(null), selectGameType(null), selectGame(null)"
+          >
+            {{ gamesMap[gameCode]?.title || 'Выбор игры:' }}
+          </span>
+          <span v-else class="select-btn active selected preselected">
+            {{ gamesMap[gameCode]?.title }}
+          </span>
+          <span
+            v-if="gameCode"
+            :class="['select-btn', gameType ? 'active selected' : '']"
+            @click="selectGameConfig(null), selectGameType(null)"
+          >
+            {{ gamesMap[gameCode]?.games[gameType] ? gamesMap[gameCode]?.games[gameType].title : 'Выбор типа игры:' }}
+          </span>
+          <span
+            v-if="gameType"
+            :class="['select-btn', gameConfig ? 'active selected' : '']"
+            @click="selectGameConfig(null)"
+          >
+            {{ gamesMap[gameCode]?.games[gameType]?.items[gameConfig] ? gamesMap[gameCode]?.games[gameType]?.items[gameConfig].title : 'Выбор режима:' }}
+          </span>
+        </div>
+        <div v-else class="breadcrumbs">Ожидание подключения игровых серверов...</div>
+      </slot>
 
       <slot
         name="new-game-controls"
@@ -54,12 +56,12 @@
         :difficultyList="difficultyList"
         :difficulty="difficulty"
       >
-        <div v-if="!deckType" class="game-types">
+        <div v-if="!gameCode" class="game-types">
           <div
-            v-for="[code, game] in gameDeckList"
+            v-for="[code, game] in gamesList"
             :key="code"
             :class="['select-btn', `game-${code}`, 'wait-for-select', game.active === false ? 'disabled' : '']"
-            @click="selectDeckType(code)"
+            @click="selectGame(code)"
           >
             <div class="title"><font-awesome-icon :icon="game.icon" /> {{ game.title }}</div>
           </div>
@@ -176,24 +178,26 @@
         </div>
       </slot>
     </div>
-    <hr />
-    <div class="game-list-container">
-      <perfect-scrollbar class="game-list">
-        <div v-if="lobbyGameList.length === 0" class="no-games-label">В данный момент нет активных игр</div>
+    <slot name="game-list">
+      <hr />
+      <div class="game-list-container">
+        <perfect-scrollbar class="game-list">
+          <div v-if="lobbyGameList.length === 0" class="no-games-label">В данный момент нет активных игр</div>
 
-        <tutorial-games class="tutorial-games" :show-teams="showTeams" @show-team="showTeam" />
+          <tutorial-games class="tutorial-games" :show-teams="showTeams" @show-team="showTeam" />
 
-        <div v-for="game in lobbyGameList" :key="game.id">
-          <game-item
-            :game="game"
-            :deck-map="deckMap"
-            :show-teams="showTeams[game.id]"
-            @show-team="showTeam(game.id)"
-            @join="joinGame"
-          />
-        </div>
-      </perfect-scrollbar>
-    </div>
+          <div v-for="game in lobbyGameList" :key="game.id">
+            <game-item
+              :game="game"
+              :gamesMap="gamesMap"
+              :show-teams="showTeams[game.id]"
+              @show-team="showTeam(game.id)"
+              @join="joinGame"
+            />
+          </div>
+        </perfect-scrollbar>
+      </div>
+    </slot>
   </div>
 </template>
 
@@ -215,11 +219,11 @@ export default {
       type: Function,
       default: null,
     },
-    deckMap: {
+    gamesMap: {
       type: Object,
       default: () => ({}),
     },
-    defaultDeckType: {
+    defaultGameCode: {
       type: String,
       default: null,
     },
@@ -227,7 +231,7 @@ export default {
   data() {
     return {
       gameConfigsLoaded: false,
-      deckType: this.defaultDeckType || null,
+      gameCode: this.defaultGameCode || null,
       gameType: null,
       gameConfig: null,
       gameTimer: 60,
@@ -241,9 +245,9 @@ export default {
     };
   },
   watch: {
-    defaultDeckType(newVal) {
-      // если defaultDeckType обновился после инициализации компонента
-      this.deckType = newVal || null;
+    defaultGameCode(newVal) {
+      // если defaultGameCode обновился после инициализации компонента
+      this.gameCode = newVal || null;
     },
   },
   computed: {
@@ -260,12 +264,12 @@ export default {
     lobby() {
       return this.store.lobby?.[this.state.currentLobby] || {};
     },
-    gameDeckList() {
-      const list = Object.entries(this.deckMap);
+    gamesList() {
+      const list = Object.entries(this.gamesMap);
       return list.sort((a, b) => (a.disabled && !b.disabled ? 1 : -1));
     },
     gameTypeMap() {
-      return this.deckMap[this.deckType]?.games || {};
+      return this.gamesMap[this.gameCode]?.games || {};
     },
     gameTypeList() {
       return Object.entries(this.gameTypeMap);
@@ -353,9 +357,9 @@ export default {
 
       this.gameConfigsLoaded = true;
     },
-    selectDeckType(type) {
-      if (type === null || this.deckMap[type]?.active !== false) {
-        this.deckType = type;
+    selectGame(type) {
+      if (type === null || this.gamesMap[type]?.active !== false) {
+        this.gameCode = type;
       }
     },
     selectGameType(type) {
@@ -439,7 +443,7 @@ export default {
     async handleAddGame(data) {
       if (!data) {
         const {
-          deckType,
+          gameCode,
           gameType,
           gameConfig,
           gameTimer,
@@ -450,7 +454,7 @@ export default {
           difficulty,
         } = this;
         data = {
-          deckType,
+          gameCode,
           gameType,
           gameConfig,
           gameTimer,
@@ -513,8 +517,8 @@ export default {
       this.handleAddGame(data);
     };
     this.state.emit.joinGame = (data) => {
-      const { deckType, gameType, gameId } = data;
-      app.$router.push({ path: `/game/${deckType}/${gameType}/${gameId}` });
+      const { gameCode, gameType, gameId } = data;
+      app.$router.push({ path: `/game/${gameCode}/${gameType}/${gameId}` });
     };
     this.state.emit.leaveGame = () => {
       if (document.fullscreenElement) document.exitFullscreen();
@@ -592,10 +596,7 @@ export default {
     .game-block {
       display: flex;
       justify-content: space-around;
-
-      .select-btn {
-        text-align: center;
-      }
+      flex-wrap: wrap;
     }
 
     .game-config-block {
