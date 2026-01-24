@@ -248,6 +248,9 @@ export default {
       // если defaultGameCode обновился после инициализации компонента
       this.gameCode = newVal || null;
     },
+    userData() {
+      if (!this.gameConfigsLoaded) this.prepareGameConfigs();
+    },
   },
   computed: {
     state() {
@@ -468,7 +471,7 @@ export default {
       await api.action
         .call({
           path: 'user.api.update',
-          args: [{ lobbyConfigs: { [gameCode]: data } }],
+          args: [{ lobbyConfigs: { [data.gameCode]: data } }],
         })
         .catch(prettyAlert);
 
