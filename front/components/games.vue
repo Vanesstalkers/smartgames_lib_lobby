@@ -1,8 +1,8 @@
 <template>
   <div :class="['games', bigConfig ? 'big-config' : '']">
     <div class="new-game-controls">
-      <slot name="breadcrumbs">
-        <div v-if="gamesList.length > 0" class="breadcrumbs">
+      <slot name="breadcrumbs" :gamesList="gamesList">
+        <div class="breadcrumbs">
           <span
             v-if="!defaultGameCode"
             :class="['select-btn', gameCode ? 'active selected' : '']"
@@ -18,17 +18,16 @@
             :class="['select-btn', gameType ? 'active selected' : '']"
             @click="selectGameConfig(null), selectGameType(null)"
           >
-            {{ gamesMap[gameCode]?.games[gameType] ? gamesMap[gameCode]?.games[gameType].title : 'Выбор типа игры:' }}
+            {{ gameTypeMap[gameType] ? gameTypeMap[gameType].title : 'Выбор типа игры:' }}
           </span>
           <span
             v-if="gameType"
             :class="['select-btn', gameConfig ? 'active selected' : '']"
             @click="selectGameConfig(null)"
           >
-            {{ gamesMap[gameCode]?.games[gameType]?.items[gameConfig] ? gamesMap[gameCode]?.games[gameType]?.items[gameConfig].title : 'Выбор режима:' }}
+            {{ gameConfigMap[gameConfig] ? gameConfigMap[gameConfig].title : 'Выбор режима:' }}
           </span>
         </div>
-        <div v-else class="breadcrumbs">Ожидание подключения игровых серверов...</div>
       </slot>
 
       <slot
@@ -190,8 +189,8 @@
             <game-item
               :game="game"
               :gamesMap="gamesMap"
-              :show-teams="showTeams[game.id]"
-              @show-team="showTeam(game.id)"
+              :showTeams="showTeams[game.id]"
+              @showTeam="showTeam(game.id)"
               @join="joinGame"
             />
           </div>
@@ -215,16 +214,16 @@ export default {
     TutorialGames,
   },
   props: {
-    addGameHandler: {
-      type: Function,
-      default: null,
-    },
     gamesMap: {
       type: Object,
       default: () => ({}),
     },
     defaultGameCode: {
       type: String,
+      default: null,
+    },
+    customJoinGame: {
+      type: Function,
       default: null,
     },
   },
@@ -321,11 +320,11 @@ export default {
   },
   methods: {
     prepareGameConfigs() {
-      const configs = this.userData.lobbyGameConfigs;
+      const configs = this.userData.lobbyConfigs?.[this.gameCode];
       if (!configs) return;
 
-      const { gameType, gameConfig, gameTimer, teamsCount, playerCount, maxPlayersInGame, gameRoundLimit, difficulty } =
-        configs.active;
+      const { gameType, gameConfig, gameTimer } = configs;
+      const { teamsCount, playerCount, maxPlayersInGame, gameRoundLimit, difficulty } = configs;
       const { difficulty: difficultyList = [] } = this.gameTypeMap[gameType]?.items[gameConfig] || {};
 
       this.$set(this, 'gameType', gameType);
@@ -466,15 +465,10 @@ export default {
         };
       }
 
-      // Если передана кастомная функция, используем её
-      if (this.addGameHandler) {
-        return await this.addGameHandler(data);
-      }
-
       await api.action
         .call({
           path: 'user.api.update',
-          args: [{ lobbyGameConfigs: { active: data } }],
+          args: [{ lobbyConfigs: { [gameCode]: data } }],
         })
         .catch(prettyAlert);
 
@@ -493,7 +487,9 @@ export default {
         })
         .catch(prettyAlert);
     },
-    async joinGame({ gameId, viewerMode, teamId }) {
+    async joinGame({ gameCode, gameId, viewerMode, teamId }) {
+      if (this.customJoinGame) return this.customJoinGame({ gameCode, gameId, viewerMode, teamId });
+
       // игровой сервер мог отключиться
       const { isAlive } = await api.action.call({ path: 'lobby.api.checkGame', args: [{ gameId }] }).catch(prettyAlert);
       if (!isAlive) return prettyAlert('Игра завершена');

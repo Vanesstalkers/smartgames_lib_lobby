@@ -27,7 +27,7 @@
       <slot name="menu-item-list">
         <div class="menu-item-list">
           <slot name="menu-item-game-full">
-            <div :class="['menu-item', pinned.game ? 'pinned' : '', 'game']">
+            <div :class="['menu-item', pinnedItems.game ? 'pinned' : '', 'game']">
               <label v-on:click="pinMenuItem('game')">
                 ИГРОВАЯ КОМНАТА
                 <font-awesome-icon :icon="['fas', 'circle-xmark']" size="2xs" />
@@ -37,8 +37,8 @@
               </slot>
             </div>
           </slot>
-          <slot name="menu-item-rules-full" :pinned="pinned.list" :pinMenuItem="pinMenuItem">
-            <div :class="['menu-item', pinned.list ? 'pinned' : '', 'list']">
+          <slot name="menu-item-rules-full" :pinned="pinnedItems.list" :pinMenuItem="pinMenuItem">
+            <div :class="['menu-item', pinnedItems.list ? 'pinned' : '', 'list']">
               <label v-on:click="pinMenuItem('list')">
                 ПРАВИЛА ИГР
                 <font-awesome-icon :icon="['fas', 'circle-xmark']" size="2xs" />
@@ -50,7 +50,7 @@
           </slot>
           <slot
             name="menu-item-chat-full"
-            :pinned="pinned.chat"
+            :pinned="pinnedItems.chat"
             :pinMenuItem="pinMenuItem"
             :unreadMessages="unreadMessages"
             :state="state"
@@ -58,7 +58,7 @@
             :hasUnreadMessages="hasUnreadMessages"
             :chatChannels="chatChannels"
           >
-            <div :class="['menu-item', pinned.chat ? 'pinned' : '', 'chat']">
+            <div :class="['menu-item', pinnedItems.chat ? 'pinned' : '', 'chat']">
               <label v-on:click="pinMenuItem('chat')">
                 ОБЩЕНИЕ
                 <font-awesome-icon :icon="['fas', 'circle-xmark']" size="2xs" />
@@ -69,15 +69,15 @@
                   class="menu-item-content"
                   :defActiveChannel="`lobby-${state.currentLobby}`"
                   :userData="userData"
-                  :isVisible="pinned.chat"
+                  :isVisible="pinnedItems.chat"
                   :hasUnreadMessages="hasUnreadMessages"
                   :channels="chatChannels"
                 />
               </slot>
             </div>
           </slot>
-          <slot name="menu-item-top-full" :pinned="pinned.top" :pinMenuItem="pinMenuItem" :lobby="lobby">
-            <div :class="['menu-item', pinned.top ? 'pinned' : '', 'top']">
+          <slot name="menu-item-top-full" :pinned="pinnedItems.top" :pinMenuItem="pinMenuItem" :lobby="lobby">
+            <div :class="['menu-item', pinnedItems.top ? 'pinned' : '', 'top']">
               <label v-on:click="pinMenuItem('top')">
                 ЗАЛ СЛАВЫ
                 <font-awesome-icon :icon="['fas', 'circle-xmark']" size="2xs" />
@@ -88,7 +88,7 @@
             </div>
           </slot>
 
-          <slot name="menu-item-info" :pinned="pinned.info" :pinMenuItem="pinMenuItem">
+          <slot name="menu-item-info" :pinned="pinnedItems.info" :pinMenuItem="pinMenuItem">
             <div :class="['menu-item', 'info']">
               {{ gameServerTitle }}
             </div>
@@ -166,7 +166,7 @@ export default {
         left: 0,
       },
       pinnedItemsLoaded: false,
-      pinned: {
+      pinnedItems: {
         chat: false,
         list: false,
         top: false,
@@ -212,7 +212,7 @@ export default {
       };
     },
     isMobilePinned() {
-      return Object.values(this.pinned).find((_) => _) && this.state.isMobile;
+      return Object.values(this.pinnedItems).find((_) => _) && this.state.isMobile;
     },
   },
   methods: {
@@ -242,14 +242,14 @@ export default {
     },
     preparePinnedItems(userData = {}) {
       if (this.pinnedItemsLoaded) return;
-      if (!userData?.lobbyPinnedItems) return;
-      this.$set(this, 'pinned', userData.lobbyPinnedItems);
+      if (!userData?.lobbyConfigs?.pinnedItems) return;
+      this.$set(this, 'pinnedItems', userData.lobbyConfigs.pinnedItems);
       this.pinnedItemsLoaded = true;
     },
     pinMenuItem(code) {
-      this.pinned[code] = !this.pinned[code];
+      this.pinnedItems[code] = !this.pinnedItems[code];
 
-      const args = [{ lobbyPinnedItems: this.pinned }];
+      const args = [{ lobbyConfigs: { pinnedItems: this.pinnedItems } }];
       api.action.call({ path: 'user.api.update', args }).catch(prettyAlert);
     },
     showProfile() {

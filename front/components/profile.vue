@@ -168,23 +168,15 @@ export default {
       if (this.tgUsername != this.userData.tgUsername) updateData.tgUsername = this.tgUsername;
       if (this.userGender != this.userData.gender) updateData.gender = this.userGender;
       if (this.userInfo != this.userData.info) updateData.info = this.userInfo;
+
       if (Object.keys(updateData).length) {
-        api.action
-          .call({
-            path: 'user.api.update',
-            args: [{ ...updateData }],
-          })
-          .then(() => {})
-          .catch(prettyAlert);
+        const args = [{ ...updateData }];
+        api.action.call({ path: 'user.api.update', args }).catch(prettyAlert);
       }
     },
     saveAvatar(data) {
-      api.action
-        .call({
-          path: 'user.api.update',
-          args: [{ avatarCode: data.code }],
-        })
-        .catch(prettyAlert);
+      const args = [{ avatarCode: data.code }];
+      api.action.call({ path: 'user.api.update', args }).catch(prettyAlert);
     },
     generate() {
       // this.disableGenerateBtn = true;

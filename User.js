@@ -6,7 +6,7 @@
       this.broadcastableFields([
         ...['gameId', 'playerId', 'name', 'login'],
         ...['tgUsername', 'gender', 'info', 'avatarCode'],
-        ...['avatars', 'lobbyPinnedItems', 'lobbyGameConfigs'],
+        ...['avatars', 'lobbyConfigs'],
         ...['currentTutorial', 'helper', 'helperLinks', 'finishedTutorials'],
         'rankings',
         'personalChatMap',
