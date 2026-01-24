@@ -13,7 +13,7 @@
         <span>
           <font-awesome-icon v-if="gameIcon" :icon="gameIcon" :style="{ marginRight: '2px' }" />
           <font-awesome-icon v-if="gameTypeIcon" :icon="gameTypeIcon" />
-          {{ gamesMap[game.gameCode].games[game.gameType].items[game.gameConfig].title }}
+          {{ gamesMap[game.gameCode]?.games[game.gameType]?.items[game.gameConfig]?.title }}
         </span>
         <span>
           <font-awesome-icon :icon="['fas', 'stopwatch']" />
@@ -37,7 +37,7 @@
       <button
         v-if="game.waitForPlayer || game.teams?.length > 0 || game.readyPlayers < game.maxPlayersInGame"
         class="lobby-btn join-btn"
-        v-on:click="$emit('join', { gameId: game.id, gameCode: game.gameCode })"
+        v-on:click="handleJoin"
       >
         Присоединиться
       </button>
@@ -104,6 +104,12 @@ export default {
     },
     gameTypeIcon() {
       return this.gamesMap[this.game.gameCode]?.games[this.game.gameType]?.icon;
+    },
+  },
+  methods: {
+    handleJoin() {
+      const { id: gameId, gameCode, gameType } = this.game;
+      this.$emit('join', { gameId, gameCode, gameType });
     },
   },
   async mounted() {},

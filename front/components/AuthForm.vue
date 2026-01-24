@@ -82,14 +82,19 @@ export default {
     async callLobbyEnter(data) {
       if (this.customLobbyEnter) return this.customLobbyEnter(data);
 
-      const { lobbyId } = data;
+      const { lobbyId, joinGameId } = data;
       await api.action
         .call({ path: 'lobby.api.enter', args: [{ lobbyId }] })
         .then(async (data) => {
           this.updateLobbyState('');
           this.$set(this.$root.state, 'currentLobby', lobbyId);
 
-          if (data.restoreGame) {
+          if (joinGameId) {
+            this.updateLobbyState('joining-game');
+            
+            const args = [{ gameId: joinGameId }];
+            await api.action.call({ path: 'game.api.join', args }).catch(prettyAlert);
+          } else if (data.restoreGame) {
             this.updateLobbyState('restoring-game');
 
             const args = [data.restoreGame];

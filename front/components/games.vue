@@ -496,7 +496,7 @@ export default {
     async joinGame({ gameId, viewerMode, teamId }) {
       // игровой сервер мог отключиться
       const { isAlive } = await api.action.call({ path: 'lobby.api.checkGame', args: [{ gameId }] }).catch(prettyAlert);
-      if (!isAlive) return;
+      if (!isAlive) return prettyAlert('Игра завершена');
 
       await api.action
         .call({

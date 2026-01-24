@@ -220,6 +220,7 @@ export default {
       const searchParams = new URLSearchParams(document.location.search);
       const portalUserId = searchParams.get('userId');
       const portalToken = searchParams.get('token');
+      const joinGameId = searchParams.get('joinGameId');
 
       const session = await api.action.public({
         path: 'user.api.initSession',
@@ -237,7 +238,7 @@ export default {
 
       window.parent.postMessage({ emit: { name: 'iframeAlive', data: {} } }, '*');
 
-      callLobbyEnter({ lobbyId: session.lobbyId });
+      callLobbyEnter({ lobbyId: session.lobbyId, joinGameId });
     },
     preparePinnedItems(userData = {}) {
       if (this.pinnedItemsLoaded) return;
@@ -310,20 +311,27 @@ export default {
       });
 
       const actions = this.injectedActions();
-      return menuWrapper({
-        buttons: [
-          cancel(),
-          {
-            text: 'Открой мой профиль',
-            action: async function ({ helper }) {
-              helper.menu = null;
-              actions.showProfile();
-            },
+      const buttons = [
+        cancel(),
+        {
+          text: 'Открой мой профиль',
+          action: async function ({ helper }) {
+            helper.menu = null;
+            actions.showProfile();
           },
-          fillTutorials,
-          helperLinks(),
-        ],
-      });
+        },
+        fillTutorials,
+        helperLinks(),
+      ];
+      if (this.state.iframeMode) {
+        buttons.unshift({
+          text: 'Выйти из лобби',
+          action: async function () {
+            window.parent.postMessage({ emit: { name: 'iframeLeaveLobby', data: {} } }, '*');
+          },
+        });
+      }
+      return menuWrapper({ buttons });
     },
   },
   provide() {
@@ -337,7 +345,12 @@ export default {
   },
   async mounted() {
     // возврат из game
-    if (this.state.currentUser && !this.userData.gameId) this.lobbyState = '';
+    if (this.state.currentUser && !this.userData.gameId) {
+      this.lobbyState = '';
+      if (this.state.iframeMode) {
+        window.parent.postMessage({ emit: { name: 'iframeLeaveGame', data: {} } }, '*');
+      }
+    }
 
     addEvents(this);
     events.resizeBG();
