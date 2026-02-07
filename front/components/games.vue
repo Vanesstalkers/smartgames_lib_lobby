@@ -11,7 +11,7 @@
             {{ gamesMap[gameCode]?.title || 'Выбор игры:' }}
           </span>
           <span v-else class="select-btn active selected preselected">
-            {{ gamesMap[gameCode]?.title }}
+            Игра {{ gamesMap[gameCode]?.title?.toUpperCase() }}
           </span>
           <span
             v-if="gameCode"
@@ -25,7 +25,7 @@
             :class="['select-btn', gameConfig ? 'active selected' : '']"
             @click="selectGameConfig(null)"
           >
-            {{ gameConfigMap[gameConfig] ? gameConfigMap[gameConfig].title : 'Выбор режима:' }}
+            {{ gameConfigMap[gameConfig] ? gameConfigMap[gameConfig].title : 'Выбор режима игры:' }}
           </span>
         </div>
       </slot>

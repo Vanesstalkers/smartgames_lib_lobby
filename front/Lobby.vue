@@ -700,7 +700,7 @@ $textshadow: rgb(42, 22, 23);
 }
 
 #lobby.mobile-view .menu-item {
-  left: 0px;
+  left: 0px !important;
   width: 100%;
   transform: none;
 }
