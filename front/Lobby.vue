@@ -668,13 +668,13 @@ $textshadow: rgb(42, 22, 23);
 
   .menu-item {
     &.game {
-      left: 100%;
+      left: 100% !important;
       top: 150px;
       width: 90%;
 
       &.pinned,
       &.tutorial-active {
-        left: 0px;
+        left: 0px !important;
         top: 0px;
         width: 100%;
 

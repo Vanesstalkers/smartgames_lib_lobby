@@ -19,7 +19,7 @@
       actions: { before: async (data) => await data.utils.showChatBlock(data) },
       buttons: [
         { text: 'Продолжай', step: 'username' },
-        { text: 'Я разберусь', action: 'exit' },
+        { text: 'Я разберусь', action: 'exit', exit: true },
       ],
     },
     username: {

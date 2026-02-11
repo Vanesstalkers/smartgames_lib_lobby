@@ -23,7 +23,7 @@
       active: { selector: '.select-btn.wait-for-select:not(.disabled)', css: { boxShadow: '0px 0px 10px 4px white' } },
       buttons: [
         { text: 'Продолжай', step: 'type' },
-        { text: 'Я разберусь', action: 'exit' },
+        { text: 'Я разберусь', action: 'exit', exit: true },
       ],
     },
     type: {
