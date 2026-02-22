@@ -91,14 +91,17 @@ export default {
 
           if (joinGameId) {
             this.updateLobbyState('joining-game');
-            
+
             const args = [{ gameId: joinGameId }];
             await api.action.call({ path: 'game.api.join', args }).catch(prettyAlert);
           } else if (data.restoreGame) {
             this.updateLobbyState('restoring-game');
 
             const args = [data.restoreGame];
-            await api.action.call({ path: 'game.api.restore', args });
+            await api.action
+              .call({ path: 'game.api.restore', args })
+              .then(() => this.updateLobbyState(''))
+              .catch(prettyAlert);
           }
         })
         .catch(prettyAlert);

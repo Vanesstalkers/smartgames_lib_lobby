@@ -58,19 +58,10 @@
         </button>
       </span>
     </div>
-    <div v-if="showTeams" :style="{ width: '100%', fontSize: '12px' }">
-      <div v-for="team in game.teams" :key="team.id" :style="{ display: 'flex', marginBottom: '6px' }">
+    <div v-if="showTeams" class="teams-list" :style="{ width: '100%', fontSize: '12px' }">
+      <div v-for="team in game.teams" :key="team.id" class="team-item">
         <button
           class="lobby-btn join-btn small-btn"
-          :style="{
-            border: 'none',
-            marginRight: '8px',
-            marginLeft: '24px',
-            marginTop: '4px',
-            marginBottom: '2px',
-            padding: '2px 6px',
-            height: '20px',
-          }"
           v-on:click="$emit('join', { gameId: game.id, gameCode: game.gameCode, teamId: team.id })"
         >
           Присоединиться
@@ -157,6 +148,27 @@ export default {
 
     &:hover {
       opacity: 0.7;
+    }
+  }
+
+  .teams-list {
+    width: 100%;
+    font-size: 12px;
+
+    .team-item {
+      display: flex;
+      margin-bottom: 6px;
+
+      > .join-btn {
+        font-size: 12px;
+        border: 1px solid;
+        margin-right: 8px;
+        margin-left: 24px;
+        margin-top: 4px;
+        margin-bottom: 2px;
+        padding: 2px 6px;
+        height: 20px;
+      }
     }
   }
 }

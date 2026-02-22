@@ -189,8 +189,8 @@
             <game-item
               :game="game"
               :gamesMap="gamesMap"
-              :showTeams="showTeams[game.id]"
-              @showTeam="showTeam(game.id)"
+              :show-teams="showTeams[game.id]"
+              @show-team="showTeam(game.id)"
               @join="joinGame"
             />
           </div>
