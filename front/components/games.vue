@@ -517,7 +517,12 @@ export default {
     };
     this.state.emit.joinGame = (data) => {
       const { gameCode, gameType, gameId } = data;
-      app.$router.push({ path: `/game/${gameCode}/${gameType}/${gameId}` });
+      const path = `/game/${gameCode}/${gameType}/${gameId}`;
+      if (app.$router.currentRoute.path === path) {
+        window.location.reload();
+      } else {
+        app.$router.push({ path });
+      }
     };
     this.state.emit.leaveGame = () => {
       if (document.fullscreenElement) document.exitFullscreen();
