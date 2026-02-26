@@ -69,9 +69,9 @@
           <div
             v-for="[code, game] in gameTypeList"
             :key="code"
-            :class="['select-btn', 'wait-for-select', code, game.disabled ? 'disabled' : '']"
+            :class="['select-btn', 'wait-for-select', code, game.active === false ? 'disabled' : '']"
             :style="game.style || {}"
-            @click="selectGameType(code)"
+            @click="game.active === false ? null : selectGameType(code)"
           >
             <font-awesome-icon v-if="game.icon" :icon="game.icon" />
             {{ game.title }}
