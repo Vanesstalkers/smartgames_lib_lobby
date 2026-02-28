@@ -295,7 +295,7 @@ export default {
     defaultTutorialMenu() {
       const menuWrapper = tutorial.menuWrapper(this.userData);
       const menuButtonsMap = tutorial.menuButtonsMap(this.tutorialActions || {});
-
+      const gameServerConfig = this.lobby.__gameServerConfig;
       const { cancel, tutorials, helperLinks } = menuButtonsMap;
       const fillTutorials = tutorials({
         showList: [
@@ -318,6 +318,44 @@ export default {
           action: async function ({ helper }) {
             helper.menu = null;
             actions.showProfile();
+          },
+        },
+        {
+          text: 'Восстановить корпоративную игру',
+          action: async function ({ helper }) {
+            const { games = [] } =
+              (await api.action.call({ path: 'game.api.getRestorableGames', args: [] }).catch(prettyAlert)) || {};
+
+            if (!games.length) {
+              helper.menu = {
+                text: 'Нет игр для восстановления',
+                buttons: [{ text: 'Назад', action: 'init' }],
+              };
+              return;
+            }
+            helper.menu = {
+              text: 'Выберите игру для восстановления:',
+              showList: games
+                .sort((a, b) => b.addTime - a.addTime)
+                .map((game) => {
+                  const { gameType, gameConfig, gameId, addTime, gameCode } = game;
+
+                  return {
+                    title: `${new Date(addTime).toLocaleString()} :: ${
+                      gameServerConfig?.games?.[gameType]?.title || gameType
+                    } ${gameServerConfig?.games?.[gameType]?.items?.[gameConfig]?.title || gameConfig || ''}`,
+                    action: {
+                      callback: async function ({ helper }) {
+                        helper.menu = null;
+                        await api.action
+                          .call({ path: 'game.api.restore', args: [{ gameId, needLoadGame: true }] })
+                          .catch(prettyAlert);
+                      },
+                    },
+                  };
+                }),
+              buttons: [{ text: 'Назад', action: 'init' }],
+            };
           },
         },
         fillTutorials,
