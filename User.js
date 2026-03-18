@@ -4,7 +4,7 @@
       super(...args);
 
       this.broadcastableFields([
-        ...['gameId', 'playerId', 'name', 'login'],
+        ...['gameId', 'playerId', 'teamId', 'name', 'login'],
         ...['tgUsername', 'gender', 'info', 'avatarCode'],
         ...['avatars', 'lobbyConfigs'],
         ...['currentTutorial', 'helper', 'helperLinks', 'finishedTutorials'],

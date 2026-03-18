@@ -107,6 +107,7 @@
         <div class="contact-icons-wrapper">
           <a href="https://t.me/smartgamesstudio" target="_black" class="telegram-link"> </a>
           <a href="https://vk.com/smartgames.studio" target="_black" class="vk-link"> </a>
+          <a href="https://www.twitch.tv/vanesstalkers" target="_black" class="twitch-link"> </a>
         </div>
       </div>
 
@@ -348,7 +349,7 @@ export default {
                       callback: async function ({ helper }) {
                         helper.menu = null;
                         await api.action
-                          .call({ path: 'game.api.restore', args: [{ gameId, needLoadGame: true }] })
+                          .call({ path: 'game.api.restore', args: [{ gameType, gameId, needLoadGame: true }] })
                           .catch(prettyAlert);
                       },
                     },
@@ -774,8 +775,7 @@ $textshadow: rgb(42, 22, 23);
   left: calc(50% - 150px);
 
   .contact-icons-wrapper {
-    top: 80px;
-    right: 15px;
+    top: 105px;
   }
 }
 
@@ -856,8 +856,8 @@ $textshadow: rgb(42, 22, 23);
 
 .contact-icons-wrapper {
   position: absolute;
-  top: 115px;
-  right: 30px;
+  top: 135px;
+  width: 100%;
   display: flex;
   justify-content: center;
 
@@ -871,7 +871,9 @@ $textshadow: rgb(42, 22, 23);
     border-radius: 50%;
 
     &:hover {
-      opacity: 0.7;
+      // opacity: 0.7;
+      width: 40px;
+      height: 40px;
     }
   }
 
@@ -881,6 +883,10 @@ $textshadow: rgb(42, 22, 23);
 
   .vk-link {
     background-image: url(./assets/vk.png);
+  }
+
+  .twitch-link {
+    background-image: url(./assets/twitch.png);
   }
 }
 

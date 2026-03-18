@@ -5,7 +5,7 @@ async (context) => {
   user.set({ gameId: null, playerId: null });
   await user.saveChanges();
 
-  await user.logout();
+  await user.returnToLobby();
 
   return { status: 'ok' };
 };
