@@ -55,6 +55,11 @@
   - При многопользовательской игре (teamsCount > 1 или playerCount > 1) вызывается notifyWatchers — уведомление в Telegram «Нужны игроки в новую игру».
 - Данные **списка игр** в лобби (`this.games`) приходят не в addGame, а при рассылке **от игры**: когда игра делает broadcastData, подписчик с правилом lobbySub получает отфильтрованный объект. Лобби в **processData** обрабатывает ключ `game`: `this.set({ games: map })`, т.е. мержит присланные изменения в `this.games`. Таким образом, при каждом saveChanges игры в лобби обновляется запись по gameId (статус, раунд, playerMap и т.д.).
 
+### Портал-лобби и игровые сервисы (release/bank/auto/billion)
+
+Портал-лобби агрегирует конфигурации игровых сервисов (url/serverUrl/games) и отдаёт их фронту через `lobby.gameServers`.
+Подробности: [docs/portal-lobby-game-services.md](./docs/portal-lobby-game-services.md).
+
 ### Завершение игры и проверка активности (gameFinished, checkGame)
 
 - Когда игра заканчивается, она публикует действие **gameFinished** (или лобби обрабатывает это иначе). Лобби в **gameFinished**: отписывается от `game-${gameId}`, обнуляет `games[gameId]`, saveChanges.
@@ -76,7 +81,8 @@
 
 ### Рейтинги (rankings, checkRatings)
 
-- В лобби хранится **rankings** (по gameType и коду рейтинга — rankingMap). При создании лобби вызывается fillRankings(); при загрузке и при обновлении пользователей — **checkRatings({ initiatorUserId, gameType })**: для каждого рейтинга берётся rankingMap, формируется список пользователей (usersTop + при необходимости initiatorUserId), к ним подмешиваются данные из users[userId].rankings, сортировка по rankingSortFunc, выбираются топ-5, результат записывается в rankings и в rankingsUsersTop (уникальный список id для рассылки).
+- В лобби хранится **rankings** (по gameType и коду рейтинга — rankingMap). При создании лобби вызывается `fillRankings()`; при загрузке и при обновлении пользователей — `**checkRatings({ initiatorUserId, gameType })`**: для каждого рейтинга берётся rankingMap, формируется список пользователей (usersTop + при необходимости initiatorUserId), к ним подмешиваются данные из `users[userId].rankings`, сортировка по `rankingSortFunc`, выбираются топ-5, результат записывается в `rankings` и в `rankingsUsersTop` (уникальный список id для рассылки).
+Подробности UI и данных: [docs/rankings.md](./docs/rankings.md).
 
 ### Чат, наблюдатели, прочее
 
@@ -88,3 +94,4 @@
 
 - Вызовы `game.api.join` и переход на страницу игры инициируются из `games.vue` и `game-item.vue` (подробнее: [Процесс игры с точки зрения кода](../game/docs/game-process.md#логика-подключения-игрока-к-игре)).
 - Домен может переопределять фронт лобби в `domain/lobby/front/` и настройки в `domain/lobby/start.js`.
+

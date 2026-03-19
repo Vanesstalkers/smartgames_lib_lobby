@@ -34,15 +34,14 @@
         .map((fileName) => `${defFemaleCode}/${node.path.parse(fileName).name}`);
       const avatars = { male: maleCodeList, female: femaleCodeList };
 
-      await super.create({ code, users: {}, rankings: this.fillRankings(), avatars });
+      await super.create({ code, users: {}, rankings: domain.game.configs.rankings(), avatars });
+      this.checkRatings();
 
-      this.checkRatings?.();
       await this.saveChanges();
-
       return this;
     }
-    async load(from, config) {
-      await super.load(from, config);
+    async load(from, loadConfig) {
+      await super.load(from, loadConfig);
 
       if (this.#chatEnabled) await this.restoreChat();
 
@@ -52,7 +51,14 @@
         user.events = {};
         if (user.online) delete user.online;
       }
-      this.checkRatings?.();
+
+      for (const [code, ranking] of Object.entries(domain.game.configs.rankings())) {
+        if (code === 'title') continue;
+        if (this.rankings[code] === undefined) this.rankings[code] = ranking;
+        if (ranking === null) this.rankings[code] = null;
+      }
+
+      this.checkRatings();
       await this.saveChanges();
 
       console.log(`Lobby "${this.storeId()}" loaded.`);
@@ -353,20 +359,18 @@
       await this.saveChanges();
     }
 
-    checkRatings({ initiatorUserId = null, gameType } = {}) {
-      if (!gameType) gameType = config.appCode;
-
-      const game = this.rankings[gameType];
-      if (!game) return;
-
-      const rankingList = Object.entries(game.rankingMap).map(([code, ranking]) => ({ ...ranking, code }));
+    checkRatings({ initiatorUserId = null } = {}) {
+      const rankingList = Object.entries(this.rankings).map(([code, ranking]) => ({ ...ranking, code }));
       const rankingsUsersTop = [];
+
       for (const ranking of rankingList) {
+        if (ranking === null) continue;
+
         const users = Object.values(ranking.usersTop || []); // клонирование массива usersTop
         if (initiatorUserId && !users.includes(initiatorUserId)) users.push(initiatorUserId);
-        const draftUsersTop = users.map((userId) => ({ ...(this.users[userId].rankings?.[gameType] || {}), userId }));
 
-        const sortFunc = this.rankingSortFunc[`${gameType}.${ranking.code}`];
+        const draftUsersTop = users.map((userId) => ({ ...(this.users[userId].rankings?.[config.smartgames.appCode] || {}), userId }));
+        const sortFunc = domain.game.configs.rankings(ranking.code)?.sortFunc;
         const usersTop = sortFunc
           ? draftUsersTop
               .sort(sortFunc)
@@ -374,14 +378,11 @@
               .splice(0, 5)
           : [];
 
-        this.set({
-          rankings: {
-            [gameType]: { rankingMap: { [ranking.code]: { usersTop } } },
-          },
-        });
+        this.set({ rankings: { [ranking.code]: { usersTop } } });
 
         rankingsUsersTop.push(...usersTop);
       }
+
       this.set({
         rankingsUsersTop: rankingsUsersTop.filter((val, idx, arr) => arr.indexOf(val) === idx),
       });

@@ -64,7 +64,7 @@
                 <font-awesome-icon :icon="['fas', 'circle-xmark']" size="2xs" />
                 <small v-if="unreadMessages > 0">есть новые сообщения</small>
               </label>
-              <slot name="menu-item-chat">
+              <slot v-if="state.currentLobby" name="menu-item-chat">
                 <chat
                   class="menu-item-content"
                   :defActiveChannel="`lobby-${state.currentLobby}`"
