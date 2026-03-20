@@ -19,9 +19,7 @@
 
       this.__gameServerConfig = lib.lobby.__gameServerConfig;
     }
-    fillRankings() {
-      return {};
-    }
+
     async create({ code }) {
       const defaultDir = './application/static/img/workers';
       const defMaleCode = '_default/male';
@@ -34,7 +32,10 @@
         .map((fileName) => `${defFemaleCode}/${node.path.parse(fileName).name}`);
       const avatars = { male: maleCodeList, female: femaleCodeList };
 
-      await super.create({ code, users: {}, rankings: domain.game.configs.rankings(), avatars });
+      await super.create({
+        ...{ code, users: {}, avatars },
+        rankings: domain.game?.configs?.rankings?.() || undefined,
+      });
       this.checkRatings();
 
       await this.saveChanges();
@@ -52,6 +53,14 @@
         if (user.online) delete user.online;
       }
 
+      this.updateRankings();
+
+      console.log(`Lobby "${this.storeId()}" loaded.`);
+      await this.saveChanges();
+      return this;
+    }
+
+    updateRankings() {
       for (const [code, ranking] of Object.entries(domain.game.configs.rankings())) {
         if (code === 'title') continue;
         if (this.rankings[code] === undefined) this.rankings[code] = ranking;
@@ -59,10 +68,6 @@
       }
 
       this.checkRatings();
-      await this.saveChanges();
-
-      console.log(`Lobby "${this.storeId()}" loaded.`);
-      return this;
     }
 
     /**
@@ -161,6 +166,16 @@
       await this.saveChanges();
 
       await this.notifyWatchers({ msg: `Подключился новый игрок (${name || 'Гость'})`, tgUsername });
+    }
+    async gameLobbyUserEnter({ sessionId, userId, name, tgUsername, broadcastableFields }) {
+      const userChannelName = `user-${userId}`;
+
+      await this.subscribe(userChannelName, { rule: 'fields', fields: ['name', 'rankings'] });
+
+      const user = lib.store('user').get(userId);
+      for (const session of user.sessions()) {
+        await session.subscribe(userChannelName, { rule: 'fields', fields: broadcastableFields });
+      }
     }
     async userLeave({ sessionId, userId }) {
       const user = this.users[userId];
@@ -369,7 +384,10 @@
         const users = Object.values(ranking.usersTop || []); // клонирование массива usersTop
         if (initiatorUserId && !users.includes(initiatorUserId)) users.push(initiatorUserId);
 
-        const draftUsersTop = users.map((userId) => ({ ...(this.users[userId].rankings?.[config.smartgames.appCode] || {}), userId }));
+        const draftUsersTop = users.map((userId) => ({
+          ...(this.users[userId].rankings?.[config.smartgames.appCode] || {}),
+          userId,
+        }));
         const sortFunc = domain.game.configs.rankings(ranking.code)?.sortFunc;
         const usersTop = sortFunc
           ? draftUsersTop
