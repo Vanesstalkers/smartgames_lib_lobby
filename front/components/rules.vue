@@ -1,98 +1,33 @@
 <template>
   <perfect-scrollbar>
     <div class="rules">
-      <ul v-if="lobby.gameServers">
-        <li class="disabled">
-          <label class="not-disabled">Игра "Релиз"</label>
-          <div>Игра про ИТ-разработку</div>
+      <ul v-if="rulesSections && rulesSections.length">
+        <li v-for="(section, sectionIndex) in rulesSections" :key="sectionIndex" class="disabled">
+          <label class="not-disabled">{{ section.title }}</label>
+          <div>{{ section.description }}</div>
+
           <ul>
-            <li>
-              <label>
-                <a :href="lobby.gameServers.release?.serverUrl + '/rules/deck.pdf'" target="_blank"> Правила игры </a>
-              </label>
-              <hr />
-              <span class="gallery" v-on:click="showGallery('release')">Список карт</span>
-            </li>
-          </ul>
-        </li>
-        <li class="disabled">
-          <label class="not-disabled">Автобизнес</label>
-          <div>Колода для игр про продажи автомобилей</div>
-          <ul v-if="lobby.gameServers.auto?.serverUrl">
-            <li>
-              <label>
-                <a :href="lobby.gameServers.auto?.serverUrl + '/rules/deck.pdf'" target="_blank"> Описание колоды </a>
-              </label>
-              <hr />
-              <span
-                v-for="(item, index) in [
-                  { type: 'car', text: 'Карты авто' },
-                  { type: 'service', text: 'Карты сервисов' },
-                  { type: 'client', text: 'Карты клиентов' },
-                  { type: 'feature', text: 'Карты особенностей' },
-                  { type: 'credit', text: 'Карты кредитов' },
-                ]"
-                :key="index"
-                class="gallery"
-                v-on:click="showGallery('auto', item.type)"
-                >{{ item.text }}</span
-              ><br />
-            </li>
-            <li>
-              <label>
-                <a :href="lobby.gameServers.auto?.serverUrl + '/rules/sales.pdf'" target="_blank">
-                  Игра "Авто-продажи"
-                </a>
-              </label>
-            </li>
-            <li>
-              <label>
-                <a :href="lobby.gameServers.auto?.serverUrl + '/rules/auction.pdf'" target="_blank">
-                  Игра "Авто-аукцион"
-                </a>
-              </label>
-            </li>
-            <li>
-              <label>
-                <a :href="lobby.gameServers.auto?.serverUrl + '/rules/express.pdf'" target="_blank">
-                  Игра "Авто-экспресс"
-                </a>
-              </label>
-            </li>
-          </ul>
-        </li>
-        <li class="disabled">
-          <label class="not-disabled">Банкинг</label>
-          <div>Колода для игр про работу в банках</div>
-          <ul>
-            <li>
-              <label>
-                <a :href="state.serverOrigin + '/pdf/rules/bank-deck.pdf'" target="_blank"> Правила игры </a>
+            <!-- Первый PDF + разделение на галерею (как в старом шаблоне) -->
+            <li v-if="section.pdfLinks && section.pdfLinks.length">
+              <label v-if="section.pdfLinks[0]">
+                <a :href="serverOrigin + section.pdfLinks[0].path" target="_blank">{{ section.pdfLinks[0].label }}</a>
               </label>
 
-              <hr />
+              <hr v-if="section.galleries && section.galleries.length" />
+
               <span
-                v-for="(item, index) in [
-                  { type: 'product', text: 'Карты продуктов' },
-                  { type: 'service', text: 'Карты сервисов' },
-                  { type: 'scoring', text: 'Карты скоринга' },
-                  { type: 'client', text: 'Карты клиентов' },
-                  { type: 'feature', text: 'Карты особенностей' },
-                ]"
-                :key="index"
+                v-for="(galleryItem, galleryIndex) in section.galleries || []"
+                :key="galleryIndex"
                 class="gallery"
-                v-on:click="showGallery('bank', item.type)"
-                >{{ item.text }}</span
-              ><br />
+                v-on:click="showGallery(galleryItem.selectGroup)"
+                >{{ galleryItem.label }}</span
+              ><br v-if="section.galleries && section.galleries.length" />
             </li>
-            <li>
+
+            <!-- Остальные PDF -->
+            <li v-for="(pdfLink, pdfIndex) in (section.pdfLinks || []).slice(1)" :key="pdfIndex">
               <label>
-                <a :href="state.serverOrigin + '/pdf/rules/bank-sales.pdf'" target="_blank"> Игра "Банк-продаж" </a>
-              </label>
-            </li>
-            <li>
-              <label>
-                <a :href="state.serverOrigin + '/pdf/rules/bank-risks.pdf'" target="_blank"> Игра "Банк-рисков" </a>
+                <a :href="serverOrigin + pdfLink.path" target="_blank">{{ pdfLink.label }}</a>
               </label>
             </li>
           </ul>
@@ -113,9 +48,19 @@ export default {
   },
   props: {},
   data() {
-    return {};
+    return {
+      rulesSections: [],
+    };
   },
-  watch: {},
+  watch: {
+    serverOrigin: {
+      immediate: true,
+      handler(newServerOrigin) {
+        if (!newServerOrigin) return;
+        this.loadRulesSections();
+      },
+    },
+  },
   computed: {
     state() {
       return this.$root.state || {};
@@ -126,6 +71,9 @@ export default {
     lobby() {
       return this.store.lobby?.[this.state.currentLobby] || {};
     },
+    serverOrigin() {
+      return this.lobby.__gameServerConfig?.serverUrl || '';
+    },
   },
   methods: {
     // Получение конфигурации фильтров
@@ -133,26 +81,27 @@ export default {
       const key = group ? `${deck}.${group}` : deck;
       return FILTER_CONFIGS[key] || { filters: [] };
     },
+    // Подгружает структуру раздела правил с текущего игрового сервиса
+    async loadRulesSections() {
+      if (!this.serverOrigin) return;
 
-    async showGallery(deck, group) {
-      const { serverUrl: serverOrigin } = this.lobby.gameServers[deck] || {};
+      const { result } = await this.fetchActionPublic('game.api.getRules');
+      this.rulesSections = result?.rules || [];
+    },
 
-      const method = 'POST';
-      const headers = { 'Content-Type': 'application/json' };
-      const body = JSON.stringify({ path: 'game.api.cards', args: [{ selectGroup: group }] });
-      const images = await fetch(serverOrigin + '/api/action/public', { method, headers, body }).then((res) =>
-        res.text().then((packet) => {
-          const {
-            result: { cards },
-          } = JSON.parse(packet);
-          return cards;
-        })
-      );
+    // Загружает карточки (галерею) по selectGroup и открывает viewer
+    async showGallery(group) {
+      if (!this.serverOrigin) return;
 
-      // Получаем конфигурацию фильтров для данного deck.group
-      const filterConfig = this.getFilterConfig(deck, group);
-      
-      this.updateGallery(images, serverOrigin, filterConfig);
+      const { result } = await this.fetchActionPublic({
+        path: 'game.api.cards',
+        args: [{ selectGroup: group ?? null }],
+      });
+      const images = result.cards;
+
+      // Получаем конфигурацию фильтров для deck/group
+      const filterConfig = this.getFilterConfig(this.lobby.__gameServerConfig?.code, group);
+      this.updateGallery(images, filterConfig);
     },
   },
   async created() {},

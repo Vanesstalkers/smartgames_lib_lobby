@@ -98,7 +98,6 @@
 
       <gallery
         :images="galleryData.images"
-        :server-origin="galleryData.serverOrigin"
         :filter-config="galleryData.filterConfig"
         @gallery-closed="onGalleryClosed"
       />
@@ -179,7 +178,6 @@ export default {
       // Данные для компонента галереи
       galleryData: {
         images: [],
-        serverOrigin: '',
         filterConfig: { filters: [] },
       },
     };
@@ -214,6 +212,21 @@ export default {
     },
     isMobilePinned() {
       return Object.values(this.pinnedItems).find((_) => _) && this.state.isMobile;
+    },
+    gameServerOrigin() {
+      return (
+        this.lobby?.__gameServerConfig?.serverUrl ||
+        this.lobby?.gameServers?.[this.lobby?.__gameServerConfig?.code]?.serverUrl ||
+        ''
+      );
+    },
+  },
+  watch: {
+    gameServerOrigin: {
+      immediate: true,
+      handler(newOrigin) {
+        this.$set(this.$root.state, 'gameServerOrigin', newOrigin || '');
+      },
     },
   },
   methods: {
@@ -275,11 +288,10 @@ export default {
     // Методы для работы с галереей
 
     // Метод для обновления галереи (вызывается из rules.vue)
-    updateGallery(images, serverOrigin, filterConfig) {
+    updateGallery(images, filterConfig) {
       // Обновляем данные для компонента галереи
       this.galleryData = {
         images,
-        serverOrigin,
         filterConfig,
       };
     },
@@ -289,7 +301,6 @@ export default {
       // Очищаем данные галереи
       this.galleryData = {
         images: [],
-        serverOrigin: '',
         filterConfig: { filters: [] },
       };
     },
@@ -376,8 +387,8 @@ export default {
   provide() {
     const self = this;
     return {
-      updateGallery: (images, serverOrigin, filterConfig) => {
-        self.updateGallery(images, serverOrigin, filterConfig);
+      updateGallery: (images, filterConfig) => {
+        self.updateGallery(images, filterConfig);
       },
       setLobbyState: (state) => (self.lobbyState = state),
     };

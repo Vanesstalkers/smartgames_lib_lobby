@@ -13,16 +13,18 @@ export default {
   props: {
     images: {
       type: Array,
-      default: () => []
-    },
-    serverOrigin: {
-      type: String,
-      default: ''
+      default: () => [],
     },
     filterConfig: {
       type: Object,
-      default: () => ({ filters: [] })
-    }
+      default: () => ({ filters: [] }),
+    },
+  },
+  computed: {
+    serverOrigin() {
+      // `gameServerOrigin` выставляется в `Lobby.vue` перед открытием галереи.
+      return this.$root?.state?.gameServerOrigin || '';
+    },
   },
   data() {
     return {
@@ -76,17 +78,17 @@ export default {
           this.showGallery();
         }
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   methods: {
     showGallery() {
       // Используем переданную конфигурацию фильтров
       this.activeFilters = this.filterConfig.filters || [];
-      
+
       // Инициализируем значения фильтров
       this.filterValues = {};
-      this.activeFilters.forEach(filter => {
+      this.activeFilters.forEach((filter) => {
         this.filterValues[filter.type] = '';
       });
 
@@ -174,7 +176,7 @@ export default {
       `;
 
       // Создаем фильтры на основе конфигурации
-      this.activeFilters.forEach(filterConfig => {
+      this.activeFilters.forEach((filterConfig) => {
         const filterElement = this.createDynamicFilter(filterConfig);
         if (filterElement) {
           filtersContainer.appendChild(filterElement);
@@ -299,7 +301,6 @@ export default {
       return container;
     },
 
-
     closeGallery() {
       if (this.viewerInstance) {
         this.viewerInstance.destroy();
@@ -310,17 +311,16 @@ export default {
       this.galleryOriginalImages = [];
       this.filterValues = {};
       this.activeFilters = [];
-      
+
       // Уведомляем родительский компонент о закрытии
       this.$emit('gallery-closed');
     },
 
-
     // Функция для применения всех фильтров
     applyFilters(items, filters, filterValues) {
       let filteredItems = [...items];
-      
-      filters.forEach(filterConfig => {
+
+      filters.forEach((filterConfig) => {
         const value = filterValues[filterConfig.type];
         if (value && value !== '') {
           // Проверяем minLength для числовых полей
@@ -329,13 +329,13 @@ export default {
               return; // Пропускаем фильтрацию если не достигнута минимальная длина
             }
           }
-          
+
           filteredItems = filterConfig.filterFunction(filteredItems, value);
         }
       });
-      
+
       return filteredItems;
-    }
+    },
   },
   beforeDestroy() {
     // Очищаем viewer при уничтожении компонента
@@ -362,6 +362,16 @@ export default {
 /* Стили для v-viewer */
 .viewer-container {
   z-index: 10001 !important;
+
+  .viewer-close {
+    background-color: #f4e205 !important;
+    &:hover {
+      opacity: 0.7 !important;
+    }
+    &:before {
+      filter: invert(1);
+    }
+  }
 }
 
 /* Стили для кастомного input в toolbar */
@@ -403,31 +413,38 @@ export default {
 /* Простое исправление - убираем aria-hidden с toolbar */
 .viewer-toolbar {
   pointer-events: auto;
+  /* Настраиваем размер кнопок навигации в галерее */
+  .viewer-button {
+    width: 80px !important;
+    height: 80px !important;
+    font-size: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+  }
+
+  .viewer-prev,
+  .viewer-next {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    background-color: #f4e205 !important;
+    margin: 0 10px !important;
+    &:hover {
+      opacity: 0.7 !important;
+    }
+    &:before {
+      filter: invert(1);
+    }
+  }
 }
 
 .custom-price-filter {
   pointer-events: auto;
-}
-
-/* Настраиваем размер кнопок навигации в галерее */
-.viewer-toolbar .viewer-button {
-  width: 80px !important;
-  height: 80px !important;
-  font-size: 24px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  line-height: 1 !important;
-}
-
-.viewer-toolbar .viewer-prev,
-.viewer-toolbar .viewer-next {
-  width: 80px !important;
-  height: 80px !important;
-  font-size: 24px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  line-height: 1 !important;
 }
 </style>
