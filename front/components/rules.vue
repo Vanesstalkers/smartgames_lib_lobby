@@ -42,7 +42,7 @@ import { PerfectScrollbar } from 'vue2-perfect-scrollbar';
 import { FILTER_CONFIGS } from './gallery-filters-config.mjs';
 
 export default {
-  inject: ['updateGallery'],
+  inject: ['updateGallery', 'fetchActionPublic'],
   components: {
     PerfectScrollbar,
   },
@@ -93,11 +93,12 @@ export default {
     async showGallery(group) {
       if (!this.serverOrigin) return;
 
-      const { result } = await this.fetchActionPublic({
+      const data = await this.fetchActionPublic({
         path: 'game.api.cards',
         args: [{ selectGroup: group ?? null }],
       });
-      const images = result.cards;
+
+      const images = data?.result?.cards || [];
 
       // Получаем конфигурацию фильтров для deck/group
       const filterConfig = this.getFilterConfig(this.lobby.__gameServerConfig?.code, group);

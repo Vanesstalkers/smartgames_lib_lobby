@@ -140,6 +140,7 @@ import rankings from './components/rankings.vue';
 import rules from './components/rules.vue';
 import chat from '~/lib/chat/front/chat.vue';
 import tutorial from '~/lib/helper/front/helper.vue';
+import { prepareLobbyGlobals } from './lobbyGlobals.mjs';
 
 export default {
   components: {
@@ -212,21 +213,6 @@ export default {
     },
     isMobilePinned() {
       return Object.values(this.pinnedItems).find((_) => _) && this.state.isMobile;
-    },
-    gameServerOrigin() {
-      return (
-        this.lobby?.__gameServerConfig?.serverUrl ||
-        this.lobby?.gameServers?.[this.lobby?.__gameServerConfig?.code]?.serverUrl ||
-        ''
-      );
-    },
-  },
-  watch: {
-    gameServerOrigin: {
-      immediate: true,
-      handler(newOrigin) {
-        this.$set(this.$root.state, 'gameServerOrigin', newOrigin || '');
-      },
     },
   },
   methods: {
@@ -386,9 +372,14 @@ export default {
   },
   provide() {
     const self = this;
+    const lobbyGlobals = prepareLobbyGlobals();
     return {
       updateGallery: (images, filterConfig) => {
         self.updateGallery(images, filterConfig);
+      },
+      fetchActionPublic: (params) => {
+        if (typeof params === 'string') params = { path: params };
+        return lobbyGlobals.fetchActionPublic.call(self, params);
       },
       setLobbyState: (state) => (self.lobbyState = state),
     };

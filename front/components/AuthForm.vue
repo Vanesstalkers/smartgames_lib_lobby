@@ -20,6 +20,10 @@
 </template>
 
 <script>
+import { prepareLobbyGlobals } from '../lobbyGlobals.mjs';
+
+const lobbyGlobals = prepareLobbyGlobals();
+
 export default {
   name: 'AuthForm',
   inject: ['setLobbyState'],
@@ -59,7 +63,7 @@ export default {
       this.showLoginForm = true;
     },
     async initSession(data = {}) {
-      return await this.$root.initSession(data, {
+      return await lobbyGlobals.initSession.call(this, data, {
         success: async ({ lobbyId }) => {
           if (this.onSuccess) await this.onSuccess({ lobbyId });
 

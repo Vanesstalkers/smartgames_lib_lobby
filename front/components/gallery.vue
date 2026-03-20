@@ -22,8 +22,7 @@ export default {
   },
   computed: {
     serverOrigin() {
-      // `gameServerOrigin` выставляется в `Lobby.vue` перед открытием галереи.
-      return this.$root?.state?.gameServerOrigin || '';
+      return this.$root?.state?.serverOrigin || '';
     },
   },
   data() {
@@ -94,7 +93,11 @@ export default {
 
       // Сохраняем оригинальные данные с сервера
       this.galleryOriginalImages = this.images.map((img) => ({
-        url: `${this.serverOrigin}/img/cards/${typeof img === 'string' ? img : img.path}`,
+        url: (() => {
+          const cardPath = typeof img === 'string' ? img : img?.path;
+          if (typeof cardPath === 'string' && /^https?:\/\//i.test(cardPath)) return cardPath;
+          return `${this.serverOrigin}/img/cards/${cardPath}`;
+        })(),
         // Копируем все свойства оригинального объекта
         ...img,
         originalData: img,

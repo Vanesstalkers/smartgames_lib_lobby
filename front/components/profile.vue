@@ -135,7 +135,7 @@ export default {
       );
     },
     avatarBackgroundImage() {
-      const defaultImage = `url(${this.state.serverOrigin}/img/workers/${this.userGender}_empty`;
+      const defaultImage = `_default/${this.userGender}_empty`;
       return `url(${this.state.serverOrigin}/img/workers/${this.userData.avatarCode || defaultImage}.png)`;
     },
   },
