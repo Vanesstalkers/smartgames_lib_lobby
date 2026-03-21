@@ -17,6 +17,8 @@ function prepareLobbyGlobals() {
           if (typeof onError === 'function') await onError(err);
         })) || {};
 
+    if (session.newUser && typeof onError === 'function') await onError(); // отработает lobbyDataLoaded = true
+
     const { token: sessionToken, userId } = session;
 
     this.$set(this.$root.state, 'currentToken', sessionToken);
