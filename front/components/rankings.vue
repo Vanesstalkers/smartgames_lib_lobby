@@ -38,7 +38,7 @@
               :class="[item.iam ? 'iam' : '', item.noGames ? 'no-games' : '']"
             >
               <td v-for="header in activeRatingHeaders" :key="header.code + idx" :code="header.code">
-                {{ item[header.code] }}
+                {{ header.format ? formatValue(item[header.code], header.format) : item[header.code] }}
               </td>
             </tr>
           </table>
@@ -56,7 +56,7 @@ export default {
     PerfectScrollbar,
   },
   props: {
-    games: Object,
+    rankings: Object,
   },
   data() {
     return {
@@ -73,7 +73,7 @@ export default {
       return this.$root.state.store.lobby[this.state.currentLobby];
     },
     rankingList() {
-      return Object.entries(this.games || {}).map(([code, ranking]) => ({ ...ranking, code }));
+      return Object.entries(this.rankings || {}).map(([code, ranking]) => ({ ...ranking, code }));
     },
     activeRatingHeaders() {
       return [{ code: 'idx' }, { code: 'player' }].concat(this.activeRating?.headers || []);
@@ -100,6 +100,10 @@ export default {
         result.push({ ...iamItem, idx: '-', iam: true, player: user.name || 'игрок (имя не указано)' });
       }
       return result;
+    },
+    formatValue(value, format) {
+      if (format === 'money') return value.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+      return value;
     },
   },
   async created() {},

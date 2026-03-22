@@ -83,7 +83,7 @@
                 <font-awesome-icon :icon="['fas', 'circle-xmark']" size="2xs" />
               </label>
               <slot name="menu-item-top">
-                <rankings class="menu-item-content" :games="lobby.rankings" />
+                <rankings class="menu-item-content" :rankings="lobby.rankings" />
               </slot>
             </div>
           </slot>

@@ -309,7 +309,7 @@
     }
 
     getGameConfig({ gameType, gameConfig }) {
-      return lib.lobby.__games[gameType].items[gameConfig];
+      return lib.lobby.__gameServerConfig.games[gameType].items[gameConfig];
     }
     async addGame(data) {
       const { creator, gameId, gameType, playerMap, restorationMode } = data;
