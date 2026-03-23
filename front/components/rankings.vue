@@ -102,8 +102,8 @@ export default {
       return result;
     },
     formatValue(value, format) {
-      if (format === 'money') return value.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
-      return value;
+      if (format === 'money') return (value || 0).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+      return value ?? '-';
     },
   },
   async created() {},
