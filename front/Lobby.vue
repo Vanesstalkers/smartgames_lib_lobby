@@ -12,6 +12,7 @@
         state.isLandscape ? 'landscape-view' : 'portrait-view',
         !state.currentUser ? 'need-auth' : '',
         isMobilePinned ? 'mobile-pinned' : '',
+        mainLogoVisible ? 'logo-visible' : '',
       ]"
     >
       <slot name="custom-layout" />
@@ -109,21 +110,6 @@
           <a href="https://www.twitch.tv/vanesstalkers" target="_black" class="twitch-link"> </a>
         </div>
       </div>
-
-      <img
-        v-if="!state.iframeMode"
-        id="bg-img"
-        src="./assets/lobby.png"
-        usemap="#image-map"
-        :style="{
-          position: 'absolute',
-          left: `${bg.left || 0}px`,
-          top: `${bg.top || 0}px`,
-          scale: bg.scale || 1,
-          transformOrigin: 'center',
-          filter: 'grayscale(1)',
-        }"
-      />
     </div>
   </div>
 </template>
@@ -181,6 +167,7 @@ export default {
         images: [],
         filterConfig: { filters: [] },
       },
+      mainLogoVisible: false,
     };
   },
   computed: {
@@ -213,6 +200,21 @@ export default {
     },
     isMobilePinned() {
       return Object.values(this.pinnedItems).find((_) => _) && this.state.isMobile;
+    },
+  },
+  watch: {
+    lobbyState(nextState) {
+      const hiddenStates = ['deactivated', 'restoring-game'];
+      if (hiddenStates.includes(nextState)) {
+        this.mainLogoVisible = false;
+        return;
+      }
+
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          this.mainLogoVisible = true;
+        });
+      });
     },
   },
   methods: {
@@ -395,23 +397,18 @@ export default {
 
     addEvents(this);
     events.resizeBG();
+
+    if (!['deactivated', 'restoring-game'].includes(this.lobbyState)) {
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          this.mainLogoVisible = true;
+        });
+      });
+    }
   },
   async beforeDestroy() {
     removeEvents();
-    this.$set(this.$root.state, 'viewLoaded', false);
-
-    // console.log('async beforeDestroy() { this.lobbyState = ', this.lobbyState);
-
-    return; // при входе в игру не выходим из лобби
-
-    await api.action
-      .call({
-        path: 'lobby.api.exit',
-      })
-      .then((data) => {
-        this.$set(this.$root.state, 'currentLobby', '');
-      })
-      .catch(prettyAlert);
+    this.$set(this.$root.state, 'viewLoaded', false); 
   },
 };
 </script>
@@ -444,6 +441,17 @@ $textshadow: rgb(42, 22, 23);
     background-image: url(./assets/logo.png);
     background-size: cover;
     transform-origin: top;
+    transform: translateY(-120%);
+    opacity: 0;
+    transition:
+      transform 0.45s ease-out,
+      opacity 0.35s ease-out,
+      height 0.25s ease-in;
+  }
+
+  &.logo-visible > .main-logo {
+    transform: translateY(0);
+    opacity: 1;
   }
 
   &.state-deactivated,
