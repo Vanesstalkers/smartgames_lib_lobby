@@ -182,8 +182,9 @@
       <div class="game-list-container">
         <perfect-scrollbar class="game-list">
           <div v-if="lobbyGameList.length === 0" class="no-games-label">В данный момент нет активных игр</div>
-
-          <tutorial-games class="tutorial-games" :show-teams="showTeams" @show-team="showTeam" />
+          <slot name="tutorial-games" :showTeams="showTeams" :showTeam="showTeam">
+            <tutorial-games class="tutorial-games" :show-teams="showTeams" :show-team="showTeam" />
+          </slot>
 
           <div v-for="game in lobbyGameList" :key="game.id">
             <game-item
@@ -536,7 +537,7 @@ export default {
 };
 </script>
 <style src="vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css" />
-<style lang="scss" scoped>
+<style lang="scss">
 @import '@/mixins.scss';
 
 .games {

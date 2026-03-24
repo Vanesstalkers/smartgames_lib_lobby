@@ -17,7 +17,7 @@
     games: {
       initialStep: true,
       text: `
-        Это игровые колоды с несколькими вариантами игр для каждой. <a>Рекомендую пройти отдельные обучения по конкретным колодам.</a>
+        Это доступные режимы игр. В некоторых режимах <a>есть возможность одиночной игры с компьютером</a>.
       `,
       actions: { before: async (data) => await data.utils.showGamesBlock(data) },
       active: { selector: '.select-btn.wait-for-select:not(.disabled)', css: { boxShadow: '0px 0px 10px 4px white' } },
@@ -76,7 +76,7 @@
     },
     join: {
       text: `
-        Это кнопки <a>для присоединения к игре</a>.
+        Это кнопка <a>для присоединения к игре</a>.
       `,
       actions: { before: async (data) => await data.utils.showGamesBlock(data) },
       active: [
