@@ -34,7 +34,7 @@
 
       await super.create({
         ...{ code, users: {}, avatars },
-        rankings: domain.game?.configs?.rankings?.() || undefined,
+        rankings: domain.game?.configs?.rankings?.() || {},
       });
       this.checkRatings();
 
