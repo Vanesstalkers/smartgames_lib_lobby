@@ -14,7 +14,7 @@
     },
   },
   steps: {
-    games: {
+    init: {
       initialStep: true,
       text: `
         Это доступные режимы игр. В некоторых режимах <a>есть возможность одиночной игры с компьютером</a>.
@@ -22,11 +22,11 @@
       actions: { before: async (data) => await data.utils.showGamesBlock(data) },
       active: { selector: '.select-btn.wait-for-select:not(.disabled)', css: { boxShadow: '0px 0px 10px 4px white' } },
       buttons: [
-        { text: 'Продолжай', step: 'type' },
+        { text: 'Продолжай', step: 'list' },
         { text: 'Я разберусь', action: 'exit', exit: true },
       ],
     },
-    type: {
+    list: {
       text: `
         Это список идущих прямо сейчас и ожидающих начала игр.
       `,
