@@ -363,7 +363,7 @@ export default {
       ];
       if (this.state.iframeMode) {
         buttons.unshift({
-          text: 'Выйти из лобби',
+          text: 'Вернуться в основное лобби',
           action: async function () {
             window.parent.postMessage({ emit: { name: 'iframeLeaveLobby', data: {} } }, '*');
           },
