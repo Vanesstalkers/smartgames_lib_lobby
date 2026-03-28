@@ -25,10 +25,12 @@
       const defMaleCode = '_default/male';
       const maleCodeList = node.fs
         .readdirSync(`${defaultDir}/${defMaleCode}`)
+        .filter((fileName) => !fileName.includes('.git'))
         .map((fileName) => `${defMaleCode}/${node.path.parse(fileName).name}`);
       const defFemaleCode = '_default/female';
       const femaleCodeList = node.fs
         .readdirSync(`${defaultDir}/${defFemaleCode}`)
+        .filter((fileName) => !fileName.includes('.git'))
         .map((fileName) => `${defFemaleCode}/${node.path.parse(fileName).name}`);
       const avatars = { male: maleCodeList, female: femaleCodeList };
 
