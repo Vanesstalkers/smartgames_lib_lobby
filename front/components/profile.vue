@@ -74,7 +74,7 @@
             <div><font-awesome-icon :icon="['far', 'star']" /> Сгенерировать персональные аватарки</div>
             <div class="price">&#8381; 1.000.000</div>
           </button> -->
-          <button class="action-btn gallery-btn" @click="showGallery">Выбрать аватар из списка</button>
+          <button v-if="!disableAvatarSelection" class="action-btn gallery-btn" @click="showGallery">Выбрать аватар из списка</button>
         </div>
       </div>
     </div>
@@ -93,6 +93,7 @@ export default {
   props: {
     userData: Object,
     closeProfile: Function,
+    disableAvatarSelection: Boolean,
   },
   data() {
     return {
@@ -136,7 +137,9 @@ export default {
     },
     avatarBackgroundImage() {
       const defaultImage = `_default/${this.userGender}_empty`;
-      return `url(${this.state.serverOrigin}/img/workers/${this.userData.avatarCode || defaultImage}.png)`;
+      const { avatarCode, avatarUrl } = this.userData;
+      const url = avatarUrl || `${this.state.serverOrigin}/img/workers/${avatarCode || defaultImage}`;
+      return `url(${url}.png)`;
     },
   },
   methods: {

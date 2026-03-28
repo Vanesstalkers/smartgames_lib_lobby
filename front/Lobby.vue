@@ -23,7 +23,7 @@
         :injectedActions="injectedActions()"
       />
 
-      <profile v-if="profileActive" :closeProfile="closeProfile" :userData="userData" />
+      <profile v-if="profileActive" :closeProfile="closeProfile" :userData="userData" :disableAvatarSelection="disableAvatarSelection" />
 
       <slot name="menu-item-list">
         <div class="menu-item-list">
@@ -143,6 +143,7 @@ export default {
   props: {
     gameServerTitle: null,
     customMenu: Function,
+    disableAvatarSelection: Boolean,
   },
   data() {
     return {
