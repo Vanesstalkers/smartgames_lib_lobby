@@ -610,8 +610,9 @@ $textshadow: rgb(42, 22, 23);
         width: 100%;
         text-align: center;
         left: 0px;
-        top: -16px;
-        color: #0078d7;
+        top: 46px;
+        color: #f4e205;
+        font-weight: lighter;
       }
 
       > div {
