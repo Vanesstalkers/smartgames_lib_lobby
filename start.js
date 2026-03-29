@@ -2,7 +2,7 @@ async () => {
   lib.lobby.__devMode = process.env.NODE_ENV === 'development';
 
   db.mongo.handlers.afterStart({ creatingLobby: async () => {
-    const LobbyClass = domain.lobby.class || lib.lobby.Class();
+    const LobbyClass = domain.lobby.Class || lib.lobby.Class();
     const lobby = new LobbyClass();
     const code = `${config.smartgames.appCode}Lobby`;
 
