@@ -43,6 +43,7 @@
         :updateTeamsCount="updateTeamsCount"
         :updatePlayerCount="updatePlayerCount"
         :updateMaxPlayersInGame="updateMaxPlayersInGame"
+        :updateMinPlayersInGame="updateMinPlayersInGame"
         :handleAddGame="handleAddGame"
         :joinGame="joinGame"
         :showTeam="showTeam"
@@ -51,6 +52,7 @@
         :teamsCount="teamsCount"
         :playerCount="playerCount"
         :maxPlayersInGame="maxPlayersInGame"
+        :minPlayersInGame="minPlayersInGame"
         :gameRoundLimit="gameRoundLimit"
         :difficultyList="difficultyList"
         :difficulty="difficulty"
@@ -142,14 +144,30 @@
               </div>
             </div>
             <div class="flex-block">
-              <div class="max-players">
-                <span class="controls">
-                  <font-awesome-icon :icon="['fas', 'plus']" @click="updateMaxPlayersInGame(1)" />
-                  {{ maxPlayersInGame.val }}
-                  <font-awesome-icon :icon="['fas', 'minus']" @click="updateMaxPlayersInGame(-1)" />
-                </span>
-                <span class="label"> максимум игроков</span>
-              </div>
+              <slot
+                name="players-count-controls"
+                :minPlayersInGame="minPlayersInGame"
+                :maxPlayersInGame="maxPlayersInGame"
+                :updateMinPlayersInGame="updateMinPlayersInGame"
+                :updateMaxPlayersInGame="updateMaxPlayersInGame"
+              >
+                <div class="min-players">
+                  <span class="controls">
+                    <font-awesome-icon :icon="['fas', 'plus']" @click="updateMinPlayersInGame(1)" />
+                    {{ minPlayersInGame.val }}
+                    <font-awesome-icon :icon="['fas', 'minus']" @click="updateMinPlayersInGame(-1)" />
+                  </span>
+                  <span class="label"> минимум игроков</span>
+                </div>
+                <div class="max-players">
+                  <span class="controls">
+                    <font-awesome-icon :icon="['fas', 'plus']" @click="updateMaxPlayersInGame(1)" />
+                    {{ maxPlayersInGame.val }}
+                    <font-awesome-icon :icon="['fas', 'minus']" @click="updateMaxPlayersInGame(-1)" />
+                  </span>
+                  <span class="label"> максимум игроков</span>
+                </div>
+              </slot>
               <button class="select-btn active" @click="handleAddGame()">Начать игру</button>
             </div>
           </div>
@@ -239,6 +257,7 @@ export default {
       teamsCount: { min: null, max: null, val: null },
       playerCount: { min: null, max: null, val: null },
       maxPlayersInGame: { min: null, max: null, val: null },
+      minPlayersInGame: { min: null, max: null, val: null },
       showTeams: {},
       difficultyList: [],
       difficulty: null,
@@ -328,7 +347,7 @@ export default {
       if (!configs) return;
 
       const { gameType, gameConfig, gameTimer } = configs;
-      const { teamsCount, playerCount, maxPlayersInGame, gameRoundLimit, difficulty } = configs;
+      const { teamsCount, playerCount, maxPlayersInGame, minPlayersInGame, gameRoundLimit, difficulty } = configs;
       const { difficulty: difficultyList = [] } = this.gameTypeMap[gameType]?.items[gameConfig] || {};
 
       this.$set(this, 'gameType', gameType);
@@ -357,6 +376,12 @@ export default {
         this.$set(this.maxPlayersInGame, 'max', max);
         this.$set(this.maxPlayersInGame, 'val', val);
       }
+      if (minPlayersInGame) {
+        const { min, max, val } = minPlayersInGame;
+        this.$set(this.minPlayersInGame, 'min', min);
+        this.$set(this.minPlayersInGame, 'max', max);
+        this.$set(this.minPlayersInGame, 'val', val);
+      }
 
       this.gameConfigsLoaded = true;
     },
@@ -382,6 +407,7 @@ export default {
         teamsCount,
         playerCount,
         maxPlayersInGame,
+        minPlayersInGame,
         difficulty: difficultyList = [],
       } = this.gameConfigMap[type] || {};
 
@@ -409,10 +435,11 @@ export default {
       this.$set(this, 'maxPlayersInGame', { min: null, max: null, val: null });
       if (maxPlayersInGame && maxPlayersInGame.toString().includes('-')) {
         const [min, max] = maxPlayersInGame
-          .toString()
-          .split('-')
-          .map((num) => parseInt(num));
+        .toString()
+        .split('-')
+        .map((num) => parseInt(num));
         this.$set(this, 'maxPlayersInGame', { min, max, val: max });
+        this.$set(this, 'minPlayersInGame', { min, max, val: min });
       }
     },
     updateGameTimer(timeShift) {
@@ -443,6 +470,12 @@ export default {
       if (this.maxPlayersInGame.val > max) this.maxPlayersInGame.val = max;
       if (this.maxPlayersInGame.val < min) this.maxPlayersInGame.val = min;
     },
+    updateMinPlayersInGame(countShift) {
+      const { max, min } = this.minPlayersInGame;
+      this.minPlayersInGame.val += countShift;
+      if (this.minPlayersInGame.val > max) this.minPlayersInGame.val = max;
+      if (this.minPlayersInGame.val < min) this.minPlayersInGame.val = min;
+    },
     async handleAddGame(data) {
       if (!data) {
         const {
@@ -453,6 +486,7 @@ export default {
           teamsCount,
           playerCount,
           maxPlayersInGame,
+          minPlayersInGame,
           gameRoundLimit,
           difficulty,
         } = this;
@@ -464,6 +498,7 @@ export default {
           teamsCount,
           playerCount,
           maxPlayersInGame,
+          minPlayersInGame,
           gameRoundLimit,
           difficulty,
         };

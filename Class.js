@@ -11,9 +11,8 @@
 
     constructor({ id } = {}, settings = {}) {
       super({ col: 'lobby', id });
-      Object.assign(this, {
-        ...lib.chat['@class'].decorate(),
-      });
+      
+      lib.chat['@class'].decorate(this);
       this.#chatEnabled = settings.chatEnabled ?? true;
       if (this.#chatEnabled) this.preventSaveFields(['chat']);
 
