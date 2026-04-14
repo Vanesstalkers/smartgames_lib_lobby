@@ -100,6 +100,7 @@
       <gallery
         :images="galleryData.images"
         :filter-config="galleryData.filterConfig"
+        :custom-viewer-options="galleryData.viewerOptions"
         @gallery-closed="onGalleryClosed"
       />
 
@@ -167,6 +168,7 @@ export default {
       galleryData: {
         images: [],
         filterConfig: { filters: [] },
+        viewerOptions: {},
       },
       mainLogoVisible: false,
     };
@@ -277,11 +279,12 @@ export default {
     // Методы для работы с галереей
 
     // Метод для обновления галереи (вызывается из rules.vue)
-    updateGallery(images, filterConfig) {
+    updateGallery(images, filterConfig, viewerOptions) {
       // Обновляем данные для компонента галереи
       this.galleryData = {
         images,
         filterConfig,
+        viewerOptions,
       };
     },
 
@@ -291,6 +294,7 @@ export default {
       this.galleryData = {
         images: [],
         filterConfig: { filters: [] },
+        viewerOptions: {},
       };
     },
     defaultTutorialMenu() {
@@ -377,8 +381,8 @@ export default {
     const self = this;
     const lobbyGlobals = prepareLobbyGlobals();
     return {
-      updateGallery: (images, filterConfig) => {
-        self.updateGallery(images, filterConfig);
+      updateGallery: (images, filterConfig, viewerOptions) => {
+        self.updateGallery(images, filterConfig, viewerOptions);
       },
       fetchActionPublic: (params) => {
         if (typeof params === 'string') params = { path: params };

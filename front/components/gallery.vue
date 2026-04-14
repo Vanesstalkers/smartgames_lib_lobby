@@ -19,6 +19,10 @@ export default {
       type: Object,
       default: () => ({ filters: [] }),
     },
+    customViewerOptions: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   computed: {
     serverOrigin() {
@@ -137,7 +141,7 @@ export default {
         }
 
         // Создаем новый viewer
-        this.viewerInstance = new Viewer(this.$refs.viewerContainer, this.viewerOptions);
+        this.viewerInstance = new Viewer(this.$refs.viewerContainer, { ...this.viewerOptions, ...this.customViewerOptions });
 
         // Добавляем кастомный input в toolbar после инициализации
         this.$nextTick(() => {

@@ -19,7 +19,7 @@
                 v-for="(galleryItem, galleryIndex) in section.galleries || []"
                 :key="galleryIndex"
                 class="gallery"
-                v-on:click="showGallery(galleryItem.selectGroup)"
+                v-on:click="showGallery(galleryItem)"
                 >{{ galleryItem.label }}</span
               ><br v-if="section.galleries && section.galleries.length" />
             </li>
@@ -90,19 +90,16 @@ export default {
     },
 
     // Загружает карточки (галерею) по selectGroup и открывает viewer
-    async showGallery(group) {
+    async showGallery({ selectGroup = null, unique }) {
       if (!this.serverOrigin) return;
 
-      const data = await this.fetchActionPublic({
-        path: 'game.api.cards',
-        args: [{ selectGroup: group ?? null }],
-      });
+      const data = await this.fetchActionPublic({ path: 'game.api.cards', args: [{ selectGroup, unique }] });
 
       const images = data?.result?.cards || [];
 
       // Получаем конфигурацию фильтров для deck/group
-      const filterConfig = this.getFilterConfig(this.lobby.__gameServerConfig?.code, group);
-      this.updateGallery(images, filterConfig);
+      const filterConfig = this.getFilterConfig(this.lobby.__gameServerConfig?.code, selectGroup);
+      this.updateGallery(images, filterConfig, { className: `group-${selectGroup}` });
     },
   },
   async created() {},
