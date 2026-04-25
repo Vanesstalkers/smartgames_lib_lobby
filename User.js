@@ -39,9 +39,9 @@
       if (!this.gameId) {
         const tutorialName = 'lobby-tutorial-start';
         if (!helper && !finishedTutorials[tutorialName]) {
-          const { steps: tutorial } = getTutorial(tutorialName);
+          const { steps: tutorial, utils } = getTutorial(tutorialName);
           helper = Object.values(tutorial).find(({ initialStep }) => initialStep);
-          helper = clone(helper, { convertFuncToString: true });
+          helper = clone({ ...helper, utils }, { convertFuncToString: true });
           currentTutorial = { active: tutorialName };
         }
         helperLinks = {

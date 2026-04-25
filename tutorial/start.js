@@ -1,107 +1,47 @@
 /* eslint-disable max-len */
 ({
-  steps: {
-    hello: {
-      initialStep: true,
-      superPos: true,
-      text: `
-        Приветствую на портале обучающих настольных бизнес-игр.
-        <a>Я могу провести короткую экскурсию</a>.
-      `,
-      buttons: [
-        { text: 'Продолжай', step: 'fullscreen' },
-        { text: 'Я разберусь', step: 'exit', exit: true },
-      ],
-    },
-    fullscreen: {
-      superPos: true,
-      text: `
-        В левом верхнем углу кнопка, которая включает <a>режим полного экрана</a>. Повторное нажатие на нее отключит этот режим.
-      `,
-      active: '.fullscreen-btn',
-      buttons: [{ text: 'Продолжай', step: 'games' }],
-    },
-    games: {
-      text: `
-        В разделе ПРАВИЛА ИГР <a>список всех игр на портале</a>. Можно&nbsp;скачать&nbsp;<a>правила</a> в pdf-формате, а также посмотреть&nbsp;<a>все&nbsp;карты&nbsp;каждой&nbsp;колоды</a>.
-      `,
-      actions: {
-        before: ({ $root }) => {
-          $root.querySelectorAll('.menu-item.pinned label').forEach(($el) => $el.click());
+  utils: {
+    ...lib.lobby.tutorial.menuGame.utils,
+    async showGamesBlock(data) {
+      const { $root } = data; // в аргументах функции строго data, чтобы фронт корректно восстановил функцию из строки
 
-          const $item = $root.querySelector('.menu-item.list.pinned');
-          if (!$item) $root.querySelector('.menu-item.list > label')?.click();
-        },
-      },
-      pos: { desktop: 'bottom-left', mobile: 'bottom-right' },
-      buttons: [{ text: 'Дальше', step: 'rates' }],
+      const $label = $root.querySelector('.menu-item.game:not(.pinned) label');
+      if ($label) $label.click();
+
+      await new Promise((resolve) => setTimeout(resolve, 0)); // ждем отрисовки фронтенда
     },
-    rates: {
+    async transferToConfigBlock(data) {
+      const { $root, utils } = data; // в аргументах функции строго data, чтобы фронт корректно восстановил функцию из строки
+      await utils.showGamesBlock(data);
+
+      const $btn = $root.querySelector('.game-block .select-btn.sales');
+      if ($btn) $btn.click();
+      await new Promise((resolve) => setTimeout(resolve, 0)); // ждем отрисовки фронтенда (для подсветки active-элементов)
+    },
+    async transferToSettingsBlock(data) {
+      const { $root, utils } = data; // в аргументах функции строго data, чтобы фронт корректно восстановил функцию из строки
+      await utils.transferToConfigBlock(data);
+
+      const $btn = $root.querySelector('.game-config-block .select-btn.ai');
+      if ($btn) $btn.click();
+      await new Promise((resolve) => setTimeout(resolve, 0)); // ждем отрисовки фронтенда (для подсветки active-элементов)
+    },
+  },
+  steps: {
+    init: {
+      initialStep: true,
       text: `
-        В разделе ЗАЛ СЛАВЫ <a>рейтинги достижений всех игроков</a>. Там&nbsp;же&nbsp;ты&nbsp;найдешь и статистику по своим играм.
+        Для начала игры нажми эту кнопку
       `,
       actions: {
-        before: ({ $root }) => {
-          let $item = $root.querySelector('.menu-item.list.pinned');
-          if ($item) $root.querySelector('.menu-item.list > label')?.click();
-          $item = $root.querySelector('.menu-item.top.pinned');
-          if (!$item) $root.querySelector('.menu-item.top > label')?.click();
+        before: async (data) => {
+          console.info('before', data);
+          await data.utils.transferToSettingsBlock(data);
+          
         },
       },
-      pos: { desktop: 'bottom-left', mobile: 'bottom-right' },
-      buttons: [{ text: 'Дальше', step: 'chat' }],
-    },
-    chat: {
-      text: `
-      ЧАТ ПОРТАЛА предназначен для общения игроков между собой и&nbsp;<a>поиска соперника</a>. В том числе есть возможность написать&nbsp;личное&nbsp;сообщение.
-      `,
-      actions: {
-        before: ({ $root }) => {
-          let $item = $root.querySelector('.menu-item.top.pinned');
-          if ($item) $root.querySelector('.menu-item.top > label')?.click();
-          $item = $root.querySelector('.menu-item.chat.pinned');
-          if (!$item) $root.querySelector('.menu-item.chat > label')?.click();
-        },
-      },
-      pos: { desktop: 'bottom-right', mobile: 'bottom-right' },
-      buttons: [{ text: 'Дальше', step: 'playground' }],
-    },
-    playground: {
-      text: `
-        В разделе ИГРОВАЯ КОМНАТА, ты можешь <a>начать новую партию в&nbsp;одиночном режиме или с соперниками</a>. Также присутствует режим наблюдателя, позволяющий наблюдать за чужими играми.
-      `,
-      actions: {
-        before: ({ $root }) => {
-          let $item = $root.querySelector('.menu-item.chat.pinned');
-          if ($item) $root.querySelector('.menu-item.chat > label')?.click();
-          $item = $root.querySelector('.menu-item.game.pinned');
-          if (!$item) $root.querySelector('.menu-item.game > label')?.click();
-        },
-      },
-      pos: { desktop: 'bottom-right', mobile: 'bottom-right' },
-      buttons: [{ text: 'Дальше', step: 'exit' }],
-    },
-    exit: {
-      superPos: true,
-      showMenu: true,
-      actions: {
-        profile: (data) => {
-          data.actions.showProfile();
-          return { exit: true };
-        },
-      },
-      active: '.helper-guru',
-      text: `
-        В левом нижнем углу иконка МЕНЮ ИГРОКА. С помощью него можно:
-        
-        - получить доступ к своему профилю
-        - <a>повторно запустить любое обучение</a>
-        <center>Рекомендую сразу заполнить профиль, установив свой личный логин, пароль и выбрав аватар для игры.</center>
-      `,
-      buttons: [
-        { text: 'Перейти в профиль', icon: ['fas', 'user'], action: 'profile' },
-        { text: 'Понятно', action: 'exit', exit: true },
-      ],
+      active: '.game-start-block .select-btn',
+      buttons: [{ text: 'Хорошо', action: 'exit', exit: true }],
     },
   },
 });

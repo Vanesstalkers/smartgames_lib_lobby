@@ -305,8 +305,8 @@ export default {
       const fillTutorials = tutorials({
         showList: [
           {
-            title: 'Стартовое приветствие',
-            action: { tutorial: 'lobby-tutorial-start' },
+            title: 'Обзорная экскурсия по порталу',
+            action: { tutorial: 'lobby-tutorial-tour' },
           },
           {
             title: 'Игровая комната',

@@ -2,7 +2,7 @@
   <div v-if="showAuthForm" class="auth">
     <div class="form">
       <h3>Вход в лобби</h3>
-      <button class="new" v-on:click="createDemoUser">Войти как гость</button>
+      <button class="new" v-on:click="createDemoUser">Начать игру</button>
       <button v-if="!showLoginForm" class="link" v-on:click="toggleLoginForm">Войти с паролем</button>
       <template v-else>
         <div class="inputs">

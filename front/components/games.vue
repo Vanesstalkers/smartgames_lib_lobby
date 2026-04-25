@@ -124,7 +124,7 @@
               <button class="select-btn active" @click="handleAddGame()">Начать игру</button>
             </div>
           </div>
-          <div v-else-if="maxPlayersInGame.val">
+          <div v-else-if="maxPlayersInGame.val || minPlayersInGame.val">
             <div class="flex-block">
               <div class="timer">
                 <span class="controls">
@@ -358,30 +358,10 @@ export default {
 
       if (gameTimer) this.$set(this, 'gameTimer', gameTimer);
       if (gameRoundLimit) this.$set(this, 'gameRoundLimit', gameRoundLimit);
-      if (teamsCount) {
-        const { min, max, val } = teamsCount;
-        this.$set(this.teamsCount, 'min', min);
-        this.$set(this.teamsCount, 'max', max);
-        this.$set(this.teamsCount, 'val', val);
-      }
-      if (playerCount) {
-        const { min, max, val } = playerCount;
-        this.$set(this.playerCount, 'min', min);
-        this.$set(this.playerCount, 'max', max);
-        this.$set(this.playerCount, 'val', val);
-      }
-      if (maxPlayersInGame) {
-        const { min, max, val } = maxPlayersInGame;
-        this.$set(this.maxPlayersInGame, 'min', min);
-        this.$set(this.maxPlayersInGame, 'max', max);
-        this.$set(this.maxPlayersInGame, 'val', val);
-      }
-      if (minPlayersInGame) {
-        const { min, max, val } = minPlayersInGame;
-        this.$set(this.minPlayersInGame, 'min', min);
-        this.$set(this.minPlayersInGame, 'max', max);
-        this.$set(this.minPlayersInGame, 'val', val);
-      }
+      if (teamsCount) this.$set(this, 'teamsCount', teamsCount);
+      if (playerCount) this.$set(this, 'playerCount', playerCount);
+      if (maxPlayersInGame) this.$set(this, 'maxPlayersInGame', maxPlayersInGame);
+      if (minPlayersInGame) this.$set(this, 'minPlayersInGame', minPlayersInGame);
 
       this.gameConfigsLoaded = true;
     },
@@ -435,9 +415,9 @@ export default {
       this.$set(this, 'maxPlayersInGame', { min: null, max: null, val: null });
       if (maxPlayersInGame && maxPlayersInGame.toString().includes('-')) {
         const [min, max] = maxPlayersInGame
-        .toString()
-        .split('-')
-        .map((num) => parseInt(num));
+          .toString()
+          .split('-')
+          .map((num) => parseInt(num));
         this.$set(this, 'maxPlayersInGame', { min, max, val: max });
         this.$set(this, 'minPlayersInGame', { min, max, val: min });
       }
@@ -784,6 +764,7 @@ export default {
 
       &.tutorial-active {
         box-shadow: 0px 0px 20px 5px white;
+        animation: tutorial-blink 1.5s ease-in-out infinite;
       }
     }
 
@@ -823,6 +804,17 @@ export default {
         height: calc(100% - 120px);
       }
     }
+  }
+}
+
+@keyframes tutorial-blink {
+  0%,
+  100% {
+    box-shadow: 0px 0px 6px 1px rgba(255, 255, 255, 0.3);
+  }
+
+  50% {
+    box-shadow: 0px 0px 20px 5px rgba(255, 255, 255, 1);
   }
 }
 </style>
