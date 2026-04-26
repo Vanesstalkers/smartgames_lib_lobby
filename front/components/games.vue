@@ -11,7 +11,7 @@
             {{ gamesMap[gameCode]?.title || 'Выбор игры:' }}
           </span>
           <span v-else class="select-btn active selected preselected">
-            Игра {{ gamesMap[gameCode]?.title?.toUpperCase() }}
+            {{ gamesMap[gameCode]?.title?.toUpperCase() }}
           </span>
           <span
             v-if="gameCode"
@@ -804,17 +804,6 @@ export default {
         height: calc(100% - 120px);
       }
     }
-  }
-}
-
-@keyframes tutorial-blink {
-  0%,
-  100% {
-    box-shadow: 0px 0px 6px 1px rgba(255, 255, 255, 0.3);
-  }
-
-  50% {
-    box-shadow: 0px 0px 20px 5px rgba(255, 255, 255, 1);
   }
 }
 </style>

@@ -31,7 +31,7 @@
     init: {
       initialStep: true,
       text: `
-        Для начала игры нажми эту кнопку
+        Для начала ознакомительной игры нажми эту кнопку
       `,
       actions: {
         before: async (data) => {

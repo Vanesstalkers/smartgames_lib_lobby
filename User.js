@@ -15,11 +15,6 @@
     }
 
     async enterLobby({ sessionId, lobbyId }) {
-      const {
-        helper: { getTutorial },
-        utils: { structuredClone: clone },
-      } = lib;
-
       await lib.store.broadcaster.publishAction.call(this, `lobby-${lobbyId}`, 'userEnter', {
         sessionId,
         userId: this.id(),
@@ -37,11 +32,19 @@
       }
 
       if (!this.gameId) {
-        const tutorialName = 'lobby-tutorial-start';
+        const tutorialName = `${config.smartgames.appCode}-lobby-tutorial-start`;
+
+        if (currentTutorial.active?.includes('lobby-tutorial-start') && currentTutorial.active !== tutorialName) {
+          // переход из другого лобби
+          this.set({ currentTutorial: null, helper: null });
+          currentTutorial = null;
+          helper = null;
+        }
+
         if (!helper && !finishedTutorials[tutorialName]) {
-          const { steps: tutorial, utils } = getTutorial(tutorialName);
+          const { steps: tutorial, utils } = this.getTutorial(tutorialName);
           helper = Object.values(tutorial).find(({ initialStep }) => initialStep);
-          helper = clone({ ...helper, utils }, { convertFuncToString: true });
+          helper = lib.utils.structuredClone({ ...helper, utils }, { convertFuncToString: true });
           currentTutorial = { active: tutorialName };
         }
         helperLinks = {
@@ -60,5 +63,9 @@
         sessionId,
         userId: this.id(),
       });
+    }
+
+    getTutorial(formattedPath) {
+      return lib.helper.getTutorial(formattedPath.replace(`${config.smartgames.appCode}-`, ''));
     }
   };
