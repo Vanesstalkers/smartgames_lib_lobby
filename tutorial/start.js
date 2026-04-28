@@ -34,11 +34,7 @@
         Для начала ознакомительной игры нажми эту кнопку
       `,
       actions: {
-        before: async (data) => {
-          console.info('before', data);
-          await data.utils.transferToSettingsBlock(data);
-          
-        },
+        before: async (data) => await data.utils.transferToSettingsBlock(data),
       },
       active: '.game-start-block .select-btn',
       buttons: [{ text: 'Хорошо', action: 'exit', exit: true }],
